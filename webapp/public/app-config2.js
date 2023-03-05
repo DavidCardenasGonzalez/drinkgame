@@ -1,0 +1,1 @@
+window['appConfig'] = {"userPoolWebClientId":"mhkcdf9plne0bcft2c7qbqer","apiEndpoint":"https://m3xrpgk8ld.execute-api.us-west-2.amazonaws.com","userPoolId":"us-west-2_fDfAB80rC"};

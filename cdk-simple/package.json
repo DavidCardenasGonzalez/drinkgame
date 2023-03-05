@@ -1,0 +1,34 @@
+{
+  "name": "cdk-simple",
+  "version": "0.1.0",
+  "bin": {
+    "cdk-simple": "bin/cdk-simple.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "deploy": "cdk deploy --profile david"
+  },
+  "devDependencies": {
+    "aws-cdk": "2.41.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "10.17.27",
+    "@types/prettier": "2.6.0",
+    "esbuild": "0",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.4",
+    "ts-node": "^10.9.1",
+    "typescript": "~3.9.7",
+    "inquirer-s3": "^1.0.1"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigatewayv2-alpha": "^2.10.0-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-authorizers-alpha": "^2.10.0-alpha.0",
+    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.10.0-alpha.0",
+    "aws-cdk-lib": "2.41.0",
+    "cdk-webapp-tools": "^2.10.4",
+    "constructs": "^10.0.0"
+  }
+}
