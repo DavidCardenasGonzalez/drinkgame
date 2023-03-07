@@ -5,6 +5,7 @@ export class AppDatabase extends Construct {
   public readonly documentsTable: dynamodb.ITable;
   public readonly sessionsTable: dynamodb.ITable;
   public readonly employeeTable: dynamodb.ITable;
+  public readonly categoriesTable: dynamodb.ITable;
   
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -83,5 +84,36 @@ export class AppDatabase extends Construct {
     });
     
     this.employeeTable = employeeTable;
+
+      // Categories table ------------------
+
+      const categoriesTable = new dynamodb.Table(this, 'CategoryTable', {
+        billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+        partitionKey: {
+          name: 'PK',
+          type: dynamodb.AttributeType.STRING,
+        },
+        sortKey: {
+          name: 'CognitoId',
+          type: dynamodb.AttributeType.STRING,
+        },
+      });
+  
+      categoriesTable.addGlobalSecondaryIndex({
+        // indexName: 'status',
+        indexName: 'GSI1',
+        partitionKey: {
+          name: 'status',
+          type: dynamodb.AttributeType.STRING,
+        },
+        sortKey: {
+          name: 'PK',
+          type: dynamodb.AttributeType.STRING,
+        },
+        projectionType: dynamodb.ProjectionType.ALL,
+        // nonKeyAttributes: ['name', 'lastname'],
+      });
+      
+      this.categoriesTable = categoriesTable;
   }
 }

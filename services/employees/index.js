@@ -341,7 +341,6 @@ const createEmployee = async (request, response) => {
     telephone: fields.telephone,
     status: "active",
     date: new Date().toISOString(),
-    _metadata: request.event.requestContext,
   };
   const params = {
     TableName: tableName,

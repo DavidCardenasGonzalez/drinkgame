@@ -26,6 +26,7 @@ export class BodazenInfrastructureMain extends Stack {
 
     const services = new AppServices(this, 'Services', {
       employeeTable: this.database.employeeTable,
+      categoriesTable: this.database.categoriesTable,
       documentsTable: this.database.documentsTable,
       sessionsTable: this.database.sessionsTable,
       uploadBucket: this.storage.uploadBucket,

@@ -15,6 +15,7 @@ interface AppServicesProps {
   documentsTable: dynamodb.ITable;
   sessionsTable: dynamodb.ITable;
   employeeTable: dynamodb.ITable;
+  categoriesTable: dynamodb.ITable;
   uploadBucket: s3.IBucket;
   assetBucket: s3.IBucket;
   userPool: cognito.IUserPool;
@@ -32,6 +33,8 @@ export class AppServices extends Construct {
 
   public readonly employeeService: ln.NodejsFunction;
 
+  public readonly categoriesService: ln.NodejsFunction;
+  
   constructor(scope: Construct, id: string, props: AppServicesProps) {
     super(scope, id);
 
@@ -171,6 +174,31 @@ export class AppServices extends Construct {
     props.assetBucket.grantReadWrite(this.employeeService);
 
     this.employeeService.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [props.userPool.userPoolArn],
+        actions: ["cognito-idp:*"],
+      })
+    );
+
+     // Categories Service ------------------------------------------------------
+
+    this.categoriesService = new NodejsServiceFunction(this, "CategoriesServiceLambda", {
+      entry: path.join(__dirname, "../../../services/categories/index.js"),
+    });
+
+    props.categoriesTable.grantReadWriteData(this.categoriesService);
+    this.categoriesService.addEnvironment("USER_POOL_ID", props.userPool.userPoolId);
+    this.categoriesService.addEnvironment(
+      "ASSET_BUCKET",
+      props.assetBucket.bucketName
+    );
+    this.categoriesService.addEnvironment(
+      "DYNAMO_DB_TABLE",
+      props.employeeTable.tableName
+    );
+    props.assetBucket.grantReadWrite(this.categoriesService);
+
+    this.categoriesService.addToRolePolicy(
       new iam.PolicyStatement({
         resources: [props.userPool.userPoolArn],
         actions: ["cognito-idp:*"],

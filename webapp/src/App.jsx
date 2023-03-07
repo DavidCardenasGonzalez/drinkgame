@@ -22,6 +22,7 @@ function App() {
   useEffect(() => {
     (async () => {
       const user = await Auth.currentAuthenticatedUser();
+      console.log(user);
       if (user) {
         setAuthState('signIn');
         setAuthUser(user);
