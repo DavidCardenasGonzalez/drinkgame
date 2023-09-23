@@ -14,6 +14,8 @@ import EmployeeCreate from './views/EmployeeCreate';
 import NotFound from './views/NotFound';
 import Upload from './views/Upload';
 import { UserProvider } from './UserContext';
+import Category from './views/Categories';
+import CategoryCreate from './views/CategoryCreate';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -44,6 +46,9 @@ function Routes() {
                   <Route exact path="/employees" component={Employee} />
                   <Route exact path="/employee/create" component={EmployeeCreate} />
                   <Route path="/employee/:employeeId" component={EmployeeCreate} />
+                  <Route exact path="/categories" component={Category} />
+                  <Route exact path="/category/create" component={CategoryCreate} />
+                  <Route path="/category/:categoryId" component={CategoryCreate} />
                   <Route exact path="/users" component={Users} />
                   <Route exact path="/users/create" component={UserCreate} />
                   <Route path="/document/:documentId" component={Detail} />

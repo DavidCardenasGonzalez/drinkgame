@@ -37,6 +37,7 @@ export class BodazenInfrastructureMain extends Stack {
     services.node.addDependency(this.storage);
 
     const api = new ApplicationAPI(this, 'API', {
+      categoriesService: services.categoriesService,
       employeeService: services.employeeService,
       commentsService: services.commentsService,
       documentsService: services.documentsService,

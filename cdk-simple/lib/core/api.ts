@@ -14,6 +14,7 @@ import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-al
 
 interface ApplicationAPIProps {
   employeeService: lambda.IFunction;
+  categoriesService: lambda.IFunction;
   commentsService: lambda.IFunction;
   documentsService: lambda.IFunction;
   usersService: lambda.IFunction;
@@ -98,7 +99,7 @@ export class ApplicationAPI extends Construct {
     });
 
 
-    // Users Service ------------------------------------------------------
+    // Employee Service ------------------------------------------------------
 
     const employeeServiceIntegration = new HttpLambdaIntegration('EmployeesIntegration',
       props.employeeService);
@@ -107,6 +108,18 @@ export class ApplicationAPI extends Construct {
       path: `/employees/{proxy+}`,
       methods: serviceMethods,
       integration: employeeServiceIntegration,
+      authorizer,
+    });
+
+    // Category Service ------------------------------------------------------
+
+    const categoryServiceIntegration = new HttpLambdaIntegration('CategoriesIntegration',
+      props.categoriesService);
+
+    this.httpApi.addRoutes({
+      path: `/categories/{proxy+}`,
+      methods: serviceMethods,
+      integration: categoryServiceIntegration,
       authorizer,
     });
 

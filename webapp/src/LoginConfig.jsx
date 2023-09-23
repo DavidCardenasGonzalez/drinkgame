@@ -66,6 +66,7 @@ export default function SignInSide(props) {
     try {
       setSubmitting(true);
       const user = await Auth.signIn(userNameForm, password);
+      console.log(user);
       setSubmitting(false);
       // setAuthState(user.attributes);
       if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
@@ -74,7 +75,9 @@ export default function SignInSide(props) {
       }
     } catch (error) {
       // eslint-disable-next-line no-console
+      console.log(error);
       console.log('error signing in', error);
+      setSubmitting(false);
     }
   };
 

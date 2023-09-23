@@ -194,7 +194,7 @@ export class AppServices extends Construct {
     );
     this.categoriesService.addEnvironment(
       "DYNAMO_DB_TABLE",
-      props.employeeTable.tableName
+      props.categoriesTable.tableName
     );
     props.assetBucket.grantReadWrite(this.categoriesService);
 

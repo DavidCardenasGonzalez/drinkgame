@@ -65,6 +65,7 @@ const uploadPhotoToS3 = async (id, formFile) => {
 
 // Get all documents
 const getAllCategories = async (request, response) => {
+  console.log("getAllCategories");
   const params = {
     TableName: tableName,
     IndexName: "GSI1",
@@ -76,6 +77,7 @@ const getAllCategories = async (request, response) => {
       "#category_status": "status",
     },
   };
+  console.log(params);
   const results = await dynamoDB.query(params).promise();
   return response.output(results.Items, 200);
 };
@@ -121,7 +123,7 @@ const createCategory = async (request, response) => {
 const router = createRouter(RouterType.HTTP_API_V2);
 router.add(
   Matcher.HttpApiV2("GET", "/categories/"),
-  // enforceGroupMembership(["admin", "manager"]),
+  enforceGroupMembership(["admin", "manager"]),
   getAllCategories
 );
 router.add(

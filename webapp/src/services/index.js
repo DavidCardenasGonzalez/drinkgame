@@ -192,6 +192,29 @@ export const getEmployees = async (id) => {
   return results.data;
 };
 
+export const createCategory = async (body) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.post(`${SERVICES_HOST}/categories/`, body);
+};
+
+export const getAllCategories = async () => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/categories/`);
+  return results.data;
+};
+
+export const getCategory = async (id) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/categories/${id}`);
+  return results.data;
+};
+
 export const createContract = async (id) => {
   if (!client) {
     await createAPIClient();

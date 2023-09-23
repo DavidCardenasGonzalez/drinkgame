@@ -29,6 +29,7 @@ function App() {
       }
     })();
     Hub.listen('auth', ({ payload }) => {
+      console.log(payload);
       setUserPayload(payload);
     });
   }, []);
@@ -36,7 +37,7 @@ function App() {
   return (
     <HelmetProvider context={helmetContext}>
       <Helmet
-        titleTemplate="%s | OlafCardiMarco"
+        titleTemplate="%s | Sr Borracho"
         defaultTitle="Sistema adminstración de Usuarios"
       />
       {authState === 'signIn' && authUser ? (

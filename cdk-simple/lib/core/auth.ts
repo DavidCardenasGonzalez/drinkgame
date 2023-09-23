@@ -24,7 +24,7 @@ export class ApplicationAuth extends Construct {
     this.userPool = new cognito.UserPool(this, 'UserPool', {
       selfSignUpEnabled: false,
       autoVerify: {
-        email: false,
+        email: true,
       },
       signInAliases: {
         email: true,

@@ -116,6 +116,18 @@ function Menu(props) {
             <ListItemText primary="Empleados" />
           </ListItemButton>
         </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              history.push('/categories');
+            }}
+          >
+            <ListItemIcon className={classes.menuIcon}>
+              <Diversity3Icon />
+            </ListItemIcon>
+            <ListItemText primary="Categorías" />
+          </ListItemButton>
+        </ListItem>
       </List>
       <Divider />
     </div>
