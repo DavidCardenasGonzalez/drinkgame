@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
+import { getAllCategories } from "../../src/services";
 
 const CategoryList = ({ route, navigation }) => {
   const [categoryList, setCategoryList] = useState([]);
@@ -30,6 +31,9 @@ const CategoryList = ({ route, navigation }) => {
     //   }
     // };
     // fetchCategories();
+    getAllCategories().then(function (res) {
+      console.log(res);
+    });
     setCategoryList([
       {
         name: "Categoria",
@@ -74,7 +78,11 @@ const CategoryList = ({ route, navigation }) => {
               )}
               <Image
                 source={{ uri: item.image }}
-                style={item.isPremium ? styles.categoryImageLock : styles.categoryImage }
+                style={
+                  item.isPremium
+                    ? styles.categoryImageLock
+                    : styles.categoryImage
+                }
               />
             </View>
             <View style={styles.categoryInfo}>
@@ -115,11 +123,11 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
   },
-  categoryImageLock : {
+  categoryImageLock: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    opacity: '0.5',
+    opacity: "0.5",
   },
   lockIconContainer: {
     position: "absolute",

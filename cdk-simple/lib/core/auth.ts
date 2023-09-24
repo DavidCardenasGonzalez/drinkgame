@@ -8,18 +8,18 @@ export class ApplicationAuth extends Construct {
 
   public readonly userPoolClient: cognito.IUserPoolClient;
 
-  public readonly postAuthTrigger: NodejsServiceFunction;
+  // public readonly postAuthTrigger: NodejsServiceFunction;
 
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
-    this.postAuthTrigger = new NodejsServiceFunction(
-      this,
-      "PostAuthTrigger",
-      {
-        entry: path.join(__dirname, "../../../services/sessions/post-auth-trigger.js"),
-      }
-    );
+    // this.postAuthTrigger = new NodejsServiceFunction(
+    //   this,
+    //   "PostAuthTrigger",
+    //   {
+    //     entry: path.join(__dirname, "../../../services/sessions/post-auth-trigger.js"),
+    //   }
+    // );
 
     this.userPool = new cognito.UserPool(this, 'UserPool', {
       selfSignUpEnabled: false,
@@ -43,9 +43,9 @@ export class ApplicationAuth extends Construct {
           mutable: true,
         },
       },
-      lambdaTriggers: {
-        postAuthentication: this.postAuthTrigger,
-      },
+      // lambdaTriggers: {
+      //   postAuthentication: this.postAuthTrigger,
+      // },
     });
 
     this.userPoolClient = new cognito.UserPoolClient(this, 'UserPoolClient', {

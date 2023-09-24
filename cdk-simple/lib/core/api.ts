@@ -15,9 +15,8 @@ import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-al
 interface ApplicationAPIProps {
   employeeService: lambda.IFunction;
   categoriesService: lambda.IFunction;
-  commentsService: lambda.IFunction;
-  documentsService: lambda.IFunction;
   usersService: lambda.IFunction;
+  publicService: lambda.IFunction;
   userPool: cognito.IUserPool;
   userPoolClient: cognito.IUserPoolClient;
 }
@@ -50,7 +49,7 @@ export class ApplicationAPI extends Construct {
           apigv2.CorsHttpMethod.PUT,
           apigv2.CorsHttpMethod.PATCH,
         ],
-        allowOrigins: ['http://localhost:3000', 'https://*'],
+        allowOrigins: ['http://localhost:3000', 'https://*', 'http://localhost:19006'],
         allowCredentials: true,
         maxAge: Duration.days(10),
       },
@@ -60,30 +59,6 @@ export class ApplicationAPI extends Construct {
 
     const authorizer = new HttpUserPoolAuthorizer('Authorizer', props.userPool, {
       userPoolClients: [props.userPoolClient]
-    });
-
-    // Comments Service -------------------------------------------------
-
-    const commentsServiceIntegration = new HttpLambdaIntegration('CommentsIntegration',
-      props.commentsService);
-
-    this.httpApi.addRoutes({
-      path: `/comments/{proxy+}`,
-      methods: serviceMethods,
-      integration: commentsServiceIntegration,
-      authorizer,
-    });
-
-    // Documents Service ------------------------------------------------
-
-    const documentsServiceIntegration = new HttpLambdaIntegration('DocumentsIntegration',
-      props.documentsService);
-
-    this.httpApi.addRoutes({
-      path: `/documents/{proxy+}`,
-      methods: serviceMethods,
-      integration: documentsServiceIntegration,
-      authorizer,
     });
 
     // Users Service ------------------------------------------------------
@@ -122,6 +97,19 @@ export class ApplicationAPI extends Construct {
       integration: categoryServiceIntegration,
       authorizer,
     });
+
+    // Public Service ------------------------------------------------------
+
+    const publicServiceIntegration = new HttpLambdaIntegration('PublicIntegration',
+        props.publicService);
+  
+      this.httpApi.addRoutes({
+        path: `/public/{proxy+}`,
+        methods: serviceMethods,
+        integration: publicServiceIntegration,
+        authorizer: new apigv2.HttpNoneAuthorizer(),
+      
+      });
 
     // Moderate ----------------------------------------------------------
 
