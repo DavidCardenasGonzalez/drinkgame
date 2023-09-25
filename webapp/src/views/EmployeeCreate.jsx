@@ -10,7 +10,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import Page from '../containers/Page';
-import { createEmployeee, getEmployees, createContract } from '../services';
+import { createEmployeee, getEmployees } from '../services';
 import { useUser } from '../UserContext';
 
 const useStyles = makeStyles((theme) => ({
@@ -129,28 +129,6 @@ function EmployeeCreate() {
     setSubmitting(false);
     setIsSuccessVisible(true);
     setIsErrorVisible(false);
-  };
-
-  const createContractF = async () => {
-    setSubmitting(true);
-    try {
-      const file = await createContract(employeeId);
-      const data = Uint8Array.from(file.data);
-      const content = new Blob([data.buffer], { type: file.contentType });
-
-      const encodedUri = window.URL.createObjectURL(content);
-      const link = document.createElement('a');
-
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', "contrato.docx");
-      link.click();
-      
-    } catch (err) {
-      console.log(err);
-      setSubmitting(false);
-      return;
-    }
-    setSubmitting(false);
   };
 
   const handleStep = (step) => () => {
@@ -375,15 +353,6 @@ function EmployeeCreate() {
             onClick={createEmployee}
           >
             Crear Empleado
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            disabled={!isValid}
-            startIcon={getButtonIcon()}
-            onClick={createContractF}
-          >
-            Crear Contrato
           </Button>
         </Grid>
       </Grid>

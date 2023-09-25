@@ -36,7 +36,7 @@ export default function CategoriesTable() {
         sort: true,
         customBodyRenderLite: function UserViewCell(dataIndex) {
           const val = tableData[dataIndex];
-          const url = `/employee/${val.PK}`;
+          const url = `/category/${val.PK}`;
           return (
             <LinkCell data={val.name} url={url} />
           );
@@ -44,12 +44,12 @@ export default function CategoriesTable() {
       },
     },
     {
-      name: 'lastname',
-      label: 'Apellidos',
+      name: 'status',
+      label: 'Estado',
       options: {
-        filter: true,
+        filter: false,
         filterType: 'textField',
-        customFilterListOptions: { render: (v) => `Apellido: ${v}` },
+        customFilterListOptions: { render: (v) => `Estado: ${v}` },
         sort: true,
       },
     },

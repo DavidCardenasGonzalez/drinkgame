@@ -1,12 +1,3 @@
-/**
- * User Service
- *
- * This is a microservice that is used in the Pluralsight path on Serverless
- * architecture.
- *
- * @author David Tucker <david@mindmill.co>
- */
-
 import path from 'path';
 import {
   enforceGroupMembership,

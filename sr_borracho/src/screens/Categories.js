@@ -32,22 +32,22 @@ const CategoryList = ({ route, navigation }) => {
     // };
     // fetchCategories();
     getAllCategories().then(function (res) {
-      console.log(res);
+      setCategoryList(res);
     });
-    setCategoryList([
-      {
-        name: "Categoria",
-        description: "Descripcion",
-        image: "https://picsum.photos/200/300",
-        isPremium: false,
-      },
-      {
-        name: "Categoria 2",
-        description: "Descripcion Premium",
-        image: "https://picsum.photos/200/300",
-        isPremium: true,
-      },
-    ]);
+    // setCategoryList([
+    //   {
+    //     name: "Categoria",
+    //     description: "Descripcion",
+    //     image: "https://picsum.photos/200/300",
+    //     isPremium: false,
+    //   },
+    //   {
+    //     name: "Categoria 2",
+    //     description: "Descripcion Premium",
+    //     image: "https://picsum.photos/200/300",
+    //     isPremium: true,
+    //   },
+    // ]);
   }, [route.params.players]);
 
   const handleCategoryPress = (category) => {
@@ -77,7 +77,7 @@ const CategoryList = ({ route, navigation }) => {
                 </View>
               )}
               <Image
-                source={{ uri: item.image }}
+                source={{ uri: item.avatarURL }}
                 style={
                   item.isPremium
                     ? styles.categoryImageLock

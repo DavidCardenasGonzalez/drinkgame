@@ -4,15 +4,14 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Paper } from '@material-ui/core';
 import Footer from './views/Footer';
 import './App.css';
-import DocumentsList from './views/DocumentsList';
+import Home from './views/Home';
 import Profile from './views/Profile';
-import Detail from './views/Detail';
 import Users from './views/Users';
 import UserCreate from './views/UserCreate';
 import Employee from './views/Employees';
 import EmployeeCreate from './views/EmployeeCreate';
 import NotFound from './views/NotFound';
-import Upload from './views/Upload';
+// import Upload from './views/Upload';
 import { UserProvider } from './UserContext';
 import Category from './views/Categories';
 import CategoryCreate from './views/CategoryCreate';
@@ -41,7 +40,7 @@ function Routes() {
             <Paper className={classes.root}>
               <div className={classes.content}>
                 <Switch>
-                  <Route exact path="/" component={DocumentsList} />
+                  <Route exact path="/" component={Home} />
                   <Route exact path="/profile" component={Profile} />
                   <Route exact path="/employees" component={Employee} />
                   <Route exact path="/employee/create" component={EmployeeCreate} />
@@ -51,8 +50,7 @@ function Routes() {
                   <Route path="/category/:categoryId" component={CategoryCreate} />
                   <Route exact path="/users" component={Users} />
                   <Route exact path="/users/create" component={UserCreate} />
-                  <Route path="/document/:documentId" component={Detail} />
-                  <Route exact path="/upload" component={Upload} />
+                  {/* <Route exact path="/upload" component={Upload} /> */}
                   <Route path="*" component={NotFound} />
                 </Switch>
               </div>

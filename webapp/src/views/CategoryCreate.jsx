@@ -22,7 +22,7 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import Page from '../containers/Page';
-import { createCategory, getCategory } from '../services';
+import { createCategory, getCategory, updateCategoryProfile } from '../services';
 // import { useUser } from '../UserContext';
 
 const useStyles = makeStyles((theme) => ({
@@ -64,24 +64,32 @@ function CategoryCreate() {
   // const [completed, setCompleted] = React.useState({});
   const classes = useStyles();
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [order, setOrder] = useState('');
   const [isPremium, setIsPremium] = useState(false);
   const [status, setStatus] = useState('active');
-
+  const [originalCategory, setOrignalCategory] = useState({});
   const [isSuccessVisible, setIsSuccessVisible] = useState(false);
   const [isErrorVisible, setIsErrorVisible] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [isValid, setIsValid] = useState(false);
 
-  const [profileImageURL, setProfileImageURL] = useState(null);
+  const [avatarImageURL, setAvatarImageURL] = useState(null);
+  const [avatarImageFile, setAvatarImageFile] = useState(null);
+
+  const [backgroudImageURL, setBackgroudImageURL] = useState(null);
+  const [backgroudImageFile, setBackgroudImageFile] = useState(null);
   // eslint-disable-next-line no-unused-vars
-  const [profileImageFile, setProfileImageFile] = useState(null);
   const [fileKey, setFileKey] = useState(Date.now());
   // eslint-disable-next-line no-unused-vars
   const [updating, setUpdating] = useState(false);
   useEffect(() => {
     if (!name || name.length < 1) {
+      setIsValid(false);
+      return;
+    }
+    if (!description || description.length < 1) {
       setIsValid(false);
       return;
     }
@@ -94,7 +102,7 @@ function CategoryCreate() {
       return;
     }
     setIsValid(true);
-  }, [name, order, status, isPremium]);
+  }, [name, description, order, status, isPremium]);
 
   useEffect(() => {
     (async () => {
@@ -102,10 +110,18 @@ function CategoryCreate() {
         return;
       }
       const data = await getCategory(categoryId);
+      setOrignalCategory(data);
       setName(data.name);
+      setDescription(data.description);
       setOrder(data.order);
       setStatus(data.status);
-      isPremium(data.isPremium);
+      setIsPremium(data.isPremium);
+      if (data.avatarURL) {
+        setAvatarImageURL(data.avatarURL);
+      }
+      if (data.backgroundURL) {
+        setBackgroudImageURL(data.backgroundURL);
+      }
     })();
   }, [categoryId]);
 
@@ -113,7 +129,9 @@ function CategoryCreate() {
     setSubmitting(true);
     try {
       await createCategory({
+        ...originalCategory,
         name,
+        description,
         order,
         status,
         isPremium,
@@ -133,16 +151,70 @@ function CategoryCreate() {
     setActiveStep(step);
   };
 
-  const handleImageChange = (event) => {
+  const handleAvatarChange = (event) => {
     const newImage = event.target?.files?.[0];
-    setProfileImageFile(newImage);
-    setProfileImageURL(URL.createObjectURL(newImage));
+    setAvatarImageFile(newImage);
+    setAvatarImageURL(URL.createObjectURL(newImage));
   };
 
-  const removeFile = () => {
-    setProfileImageFile(null);
-    setProfileImageURL(null);
+  const removeAvatarFile = () => {
+    setAvatarImageFile(null);
+    setAvatarImageURL(null);
     setFileKey(Date.now());
+  };
+
+  const updateAvatarPictures = async () => {
+    setUpdating(true);
+    let shouldDeletePicture = false;
+    let file;
+    if (originalCategory.avatarURL && !avatarImageURL) {
+      // Photo needs to be deleted
+      shouldDeletePicture = true;
+    } else if (originalCategory.avatarURL !== avatarImageURL) {
+      // Photo needs to be updated
+      file = avatarImageFile;
+    }
+    await updateCategoryProfile(
+      originalCategory.PK,
+      originalCategory.status,
+      shouldDeletePicture,
+      file,
+      'avatar',
+    );
+    setUpdating(false);
+  };
+
+  const handleBackgroudChange = (event) => {
+    const newImage = event.target?.files?.[0];
+    setBackgroudImageFile(newImage);
+    setBackgroudImageURL(URL.createObjectURL(newImage));
+  };
+
+  const removeBackgroudFile = () => {
+    setBackgroudImageFile(null);
+    setBackgroudImageURL(null);
+    setFileKey(Date.now());
+  };
+
+  const updateBackgroudPictures = async () => {
+    setUpdating(true);
+    let shouldDeletePicture = false;
+    let file;
+    if (originalCategory.backgroudURL && !backgroudImageURL) {
+      // Photo needs to be deleted
+      shouldDeletePicture = true;
+    } else if (originalCategory.backgroudURL !== backgroudImageURL) {
+      // Photo needs to be updated
+      file = backgroudImageFile;
+    }
+    await updateCategoryProfile(
+      originalCategory.PK,
+      originalCategory.status,
+      shouldDeletePicture,
+      file,
+      'backgroud',
+    );
+    setUpdating(false);
   };
 
   // Determine what icon is used with the upload button
@@ -161,6 +233,10 @@ function CategoryCreate() {
     },
     {
       name: 'Categorías',
+      link: '/categories',
+    },
+    {
+      name: 'Formulario',
       link: '/categories',
     },
   ];
@@ -200,9 +276,14 @@ function CategoryCreate() {
                       Información General
                     </StepButton>
                   </Step>
-                  <Step completed={isValid && profileImageURL}>
+                  <Step completed={isValid && avatarImageURL}>
                     <StepButton color="inherit" onClick={handleStep(1)} disabled={!isValid}>
-                      Tomar Foto
+                      Foto Avatar
+                    </StepButton>
+                  </Step>
+                  <Step completed={isValid && backgroudImageURL}>
+                    <StepButton color="inherit" onClick={handleStep(2)} disabled={!isValid}>
+                      Foto Fondo
                     </StepButton>
                   </Step>
                 </Stepper>
@@ -215,6 +296,16 @@ function CategoryCreate() {
                     label="Nombre"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    required
+                    disabled={submitting}
+                    fullWidth
+                  />
+                  <TextField
+                    id="description"
+                    className={classes.input}
+                    label="DEscripción"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     required
                     disabled={submitting}
                     fullWidth
@@ -258,7 +349,8 @@ function CategoryCreate() {
                     control={(
                       <Checkbox
                         checked={isPremium}
-                        onChange={setIsPremium}
+                        disabled={submitting}
+                        onChange={() => setIsPremium(!isPremium)}
                         color="primary" // Opcional, puedes personalizar el color del checkbox
                       />
                     )}
@@ -268,18 +360,18 @@ function CategoryCreate() {
               ) : null}
               {activeStep === 1 ? (
                 <div>
-                  <Avatar src={profileImageURL} className={classes.profilePicPreview} />
+                  <Avatar src={avatarImageURL} className={classes.profilePicPreview} />
                   <input
                     accept="image/*"
                     className={classes.input}
                     style={{ display: 'none' }}
                     id="raised-button-file"
                     key={fileKey}
-                    onChange={handleImageChange}
+                    onChange={handleAvatarChange}
                     type="file"
                   />
                   <label htmlFor="raised-button-file">
-                    {!profileImageURL && (
+                    {!avatarImageURL && (
                       <Button
                         variant="outlined"
                         component="span"
@@ -289,7 +381,7 @@ function CategoryCreate() {
                         Add Picture
                       </Button>
                     )}
-                    {profileImageURL && (
+                    {avatarImageURL && (
                       <Button
                         variant="outlined"
                         component="span"
@@ -300,18 +392,86 @@ function CategoryCreate() {
                       </Button>
                     )}
                   </label>
-                  {profileImageURL && (
+                  {avatarImageURL && (
                     <Button
                       variant="outlined"
                       color="secondary"
                       component="span"
-                      onClick={removeFile}
+                      onClick={removeAvatarFile}
                       disabled={updating}
                       className={classes.button}
                     >
                       Remove Picture
                     </Button>
                   )}
+                  <br />
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    onClick={updateAvatarPictures}
+                    // disabled={updating}
+                    className={classes.button}
+                  >
+                    Actualizar imagen
+                  </Button>
+                </div>
+              ) : null}
+              {activeStep === 2 ? (
+                <div>
+                  <Avatar src={backgroudImageURL} className={classes.profilePicPreview} />
+                  <input
+                    accept="image/*"
+                    className={classes.input}
+                    style={{ display: 'none' }}
+                    id="raised-button-file"
+                    key={fileKey}
+                    onChange={handleBackgroudChange}
+                    type="file"
+                  />
+                  <label htmlFor="raised-button-file">
+                    {!backgroudImageURL && (
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        disabled={updating}
+                        className={classes.button}
+                      >
+                        Add Picture
+                      </Button>
+                    )}
+                    {backgroudImageURL && (
+                      <Button
+                        variant="outlined"
+                        component="span"
+                        disabled={updating}
+                        className={classes.button}
+                      >
+                        Edit Picture
+                      </Button>
+                    )}
+                  </label>
+                  {backgroudImageURL && (
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      component="span"
+                      onClick={removeBackgroudFile}
+                      disabled={updating}
+                      className={classes.button}
+                    >
+                      Remove Picture
+                    </Button>
+                  )}
+                  <br />
+                  <Button
+                    variant="outlined"
+                    component="span"
+                    onClick={updateBackgroudPictures}
+                    // disabled={updating}
+                    className={classes.button}
+                  >
+                    Actualizar Fondo
+                  </Button>
                 </div>
               ) : null}
             </CardContent>

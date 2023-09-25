@@ -26,16 +26,16 @@ const tableName = process.env.CATEGORIES_DB_TABLE;
 // UTILITY FUNCTIONS
 //------------------------------------------------------------------------
 
-// const getSignedURL = async (picture) => {
-//   const urlExpirySeconds = 60 * 60 * 24; // One day
-//   const params = {
-//     Bucket: process.env.ASSET_BUCKET,
-//     Key: picture,
-//     Expires: urlExpirySeconds,
-//   };
-//   const signedURL = await s3.getSignedUrlPromise("getObject", params);
-//   return signedURL;
-// };
+const getSignedURL = async (picture) => {
+  const urlExpirySeconds = 60 * 60 * 24; // One day
+  const params = {
+    Bucket: process.env.ASSET_BUCKET,
+    Key: picture,
+    Expires: urlExpirySeconds,
+  };
+  const signedURL = await s3.getSignedUrlPromise("getObject", params);
+  return signedURL;
+};
 
 //------------------------------------------------------------------------
 // SERVICE FUNCTIONS
@@ -57,14 +57,22 @@ const getAllCategories = async (request, response) => {
   };
   console.log(params);
   const results = await dynamoDB.query(params).promise();
-  return response.output(results.Items, 200);
+  const mappedCategories = await Promise.all(
+    results.Items.map(async (category) => {
+      if (category.avatar) {
+        category.avatarURL = await getSignedURL(category.avatar);
+      }
+      if (category.background) {
+        category.backgroundURL = await getSignedURL(category.background);
+      }
+      return category;
+    })
+  );
+  return response.output(mappedCategories, 200);
 };
 
 const router = createRouter(RouterType.HTTP_API_V2);
-router.add(
-  Matcher.HttpApiV2("GET", "/public/categories/"),
-  getAllCategories
-);
+router.add(Matcher.HttpApiV2("GET", "/public/categories/"), getAllCategories);
 // Lambda Handler
 exports.handler = async (event, context) => {
   return router.run(event, context);

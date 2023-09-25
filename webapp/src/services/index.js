@@ -28,42 +28,6 @@ const createAPIClient = async () => {
   });
 };
 
-// Documents ---------------------------------------------------------
-
-export const getAllDocuments = async () => {
-  if (!client) {
-    await createAPIClient();
-  }
-  const { data } = await client.get(`${SERVICES_HOST}/documents/`);
-  return data;
-};
-
-export const getDocument = async (id) => {
-  if (!client) {
-    await createAPIClient();
-  }
-  const { data } = await client.get(`${SERVICES_HOST}/documents/${id}`);
-  return data;
-};
-
-export const deleteDocument = async (id) => {
-  if (!client) {
-    await createAPIClient();
-  }
-  await client.delete(`${SERVICES_HOST}/documents/${id}`);
-};
-
-export const uploadDocument = async (name, tags, file) => {
-  if (!client) {
-    await createAPIClient();
-  }
-  const formData = new FormData();
-  formData.append('name', name);
-  formData.append('tags', tags.join(','));
-  formData.append('file', file);
-  await client.post(`${SERVICES_HOST}/documents/`, formData);
-};
-
 // Users
 
 let userProfileData;
@@ -133,40 +97,6 @@ export const updateCurrentUserProfile = async (name, shouldDeletePicture, pictur
   return results.data.user;
 };
 
-// Comments --------------------------------------------------------------
-
-export const createComment = async (id, content) => {
-  if (!id) {
-    throw new Error('Must have document ID');
-  }
-  if (!client) {
-    await createAPIClient();
-  }
-  const body = {
-    Comment: content,
-  };
-  await client.post(`${SERVICES_HOST}/comments/${id}`, body);
-};
-
-export const getCommentsForDocument = async (id) => {
-  if (!client) {
-    await createAPIClient();
-  }
-  const results = await client.get(`${SERVICES_HOST}/comments/${id}`);
-  const sortedResults = results.data.sort((a, b) => new Date(b.DateAdded) - new Date(a.DateAdded));
-  return sortedResults;
-};
-
-export const reportCommentForModeration = async (id) => {
-  if (!client) {
-    await createAPIClient();
-  }
-  const body = {
-    CommentId: id,
-  };
-  await client.post(`${SERVICES_HOST}/moderate/`, body);
-};
-
 // Employees ----------------------------------------
 
 export const createEmployeee = async (body) => {
@@ -192,6 +122,8 @@ export const getEmployees = async (id) => {
   return results.data;
 };
 
+// Categories ----------------------------------------
+
 export const createCategory = async (body) => {
   if (!client) {
     await createAPIClient();
@@ -215,12 +147,28 @@ export const getCategory = async (id) => {
   return results.data;
 };
 
-export const createContract = async (id) => {
+export const updateCategoryProfile = async (PK, status, shouldDeletePicture, picture, type) => {
   if (!client) {
     await createAPIClient();
   }
-  const results = await client.get(`${SERVICES_HOST}/employees/contract/${id}`);
-  return results.data;
+  const formData = new FormData();
+  if (PK) {
+    formData.append('PK', PK);
+  }
+  if (status) {
+    formData.append('status', status);
+  }
+  if (shouldDeletePicture) {
+    formData.append('deletePicture', true);
+  }
+  if (picture) {
+    formData.append('picture', picture);
+  }
+  if (type) {
+    formData.append('type', type);
+  }
+  const results = await client.patch(`${SERVICES_HOST}/categories/actions/updatePicture`, formData);
+  return results.data.user;
 };
 
 /* eslint-enable no-console */
