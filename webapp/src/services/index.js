@@ -171,4 +171,69 @@ export const updateCategoryProfile = async (PK, status, shouldDeletePicture, pic
   return results.data.user;
 };
 
+export const simulateCategory = async (body) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.post(`${SERVICES_HOST}/categories/actions/simulate`, body);
+  return results.data;
+};
+
+// Cards ----------------------------------------
+
+export const createCard = async (body) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.post(`${SERVICES_HOST}/cards/`, body);
+};
+
+export const getAllCards = async () => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/cards/`);
+  return results.data;
+};
+
+export const getCategoryCards = async (categoryId) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/cards/category/${categoryId}`);
+  return results.data;
+};
+
+export const getCard = async (id) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/cards/${id}`);
+  return results.data;
+};
+
+export const updateCardProfile = async (PK, categoryId, shouldDeletePicture, picture, type) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const formData = new FormData();
+  if (PK) {
+    formData.append('PK', PK);
+  }
+  if (categoryId) {
+    formData.append('categoryId', categoryId);
+  }
+  if (shouldDeletePicture) {
+    formData.append('deletePicture', true);
+  }
+  if (picture) {
+    formData.append('picture', picture);
+  }
+  if (type) {
+    formData.append('type', type);
+  }
+  const results = await client.patch(`${SERVICES_HOST}/cards/actions/updatePicture`, formData);
+  return results.data.user;
+};
+
 /* eslint-enable no-console */

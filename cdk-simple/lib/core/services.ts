@@ -14,6 +14,7 @@ import { NodejsServiceFunction } from "../constructs/lambda";
 interface AppServicesProps {
   employeeTable: dynamodb.ITable;
   categoriesTable: dynamodb.ITable;
+  cardsTable: dynamodb.ITable;
   uploadBucket: s3.IBucket;
   assetBucket: s3.IBucket;
   userPool: cognito.IUserPool;
@@ -29,6 +30,8 @@ export class AppServices extends Construct {
   public readonly employeeService: ln.NodejsFunction;
 
   public readonly categoriesService: ln.NodejsFunction;
+
+  public readonly cardsService: ln.NodejsFunction;
 
   public readonly publicService: ln.NodejsFunction;
 
@@ -97,6 +100,7 @@ export class AppServices extends Construct {
     );
 
     props.categoriesTable.grantReadWriteData(this.categoriesService);
+    props.cardsTable.grantReadWriteData(this.categoriesService);
     this.categoriesService.addEnvironment(
       "USER_POOL_ID",
       props.userPool.userPoolId
@@ -109,6 +113,10 @@ export class AppServices extends Construct {
       "DYNAMO_DB_TABLE",
       props.categoriesTable.tableName
     );
+    this.categoriesService.addEnvironment(
+      "CARDS_DB_TABLE",
+      props.cardsTable.tableName
+    );
     props.assetBucket.grantReadWrite(this.categoriesService);
 
     this.categoriesService.addToRolePolicy(
@@ -117,6 +125,44 @@ export class AppServices extends Construct {
         actions: ["cognito-idp:*"],
       })
     );
+
+    // Cards Service ------------------------------------------------------
+
+    this.cardsService = new NodejsServiceFunction(
+      this,
+      "CardsServiceLambda",
+      {
+        entry: path.join(__dirname, "../../../services/cards/index.js"),
+      }
+    );
+
+    props.categoriesTable.grantReadWriteData(this.cardsService);
+    props.cardsTable.grantReadWriteData(this.cardsService);
+    this.cardsService.addEnvironment(
+      "USER_POOL_ID",
+      props.userPool.userPoolId
+    );
+    this.cardsService.addEnvironment(
+      "ASSET_BUCKET",
+      props.assetBucket.bucketName
+    );
+    this.cardsService.addEnvironment(
+      "CATEGORIES_DB_TABLE",
+      props.categoriesTable.tableName
+    );
+    this.cardsService.addEnvironment(
+      "DYNAMO_DB_TABLE",
+      props.cardsTable.tableName
+    );
+    props.assetBucket.grantReadWrite(this.cardsService);
+
+    this.cardsService.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [props.userPool.userPoolArn],
+        actions: ["cognito-idp:*"],
+      })
+    );
+
 
     // Public Service ------------------------------------------------------
 
@@ -137,6 +183,11 @@ export class AppServices extends Construct {
       "CATEGORIES_DB_TABLE",
       props.categoriesTable.tableName
     );
+    this.publicService.addEnvironment(
+      "CARDS_DB_TABLE",
+      props.cardsTable.tableName
+    );
+
     props.assetBucket.grantReadWrite(this.publicService);
 
     this.publicService.addToRolePolicy(

@@ -8,6 +8,8 @@ import Home from './views/Home';
 import Profile from './views/Profile';
 import Users from './views/Users';
 import UserCreate from './views/UserCreate';
+import Cards from './views/Cards';
+import CardCreate from './views/CardCreate';
 import Employee from './views/Employees';
 import EmployeeCreate from './views/EmployeeCreate';
 import NotFound from './views/NotFound';
@@ -15,6 +17,7 @@ import NotFound from './views/NotFound';
 import { UserProvider } from './UserContext';
 import Category from './views/Categories';
 import CategoryCreate from './views/CategoryCreate';
+import SimulateCategory from './views/SimulateCategory';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -46,8 +49,12 @@ function Routes() {
                   <Route exact path="/employee/create" component={EmployeeCreate} />
                   <Route path="/employee/:employeeId" component={EmployeeCreate} />
                   <Route exact path="/categories" component={Category} />
+                  <Route path="/category/simulate/:categoryId" component={SimulateCategory} />
                   <Route exact path="/category/create" component={CategoryCreate} />
                   <Route path="/category/:categoryId" component={CategoryCreate} />
+                  <Route path="/cards/:categoryId/:cardId" component={CardCreate} />
+                  <Route path="/cards/:categoryId/create" component={CardCreate} />
+                  <Route path="/cards/:categoryId" component={Cards} />
                   <Route exact path="/users" component={Users} />
                   <Route exact path="/users/create" component={UserCreate} />
                   {/* <Route exact path="/upload" component={Upload} /> */}

@@ -1,11 +1,10 @@
 import React from 'react';
-import { Toolbar, Button } from '@material-ui/core';
+import { Toolbar } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import BackupIcon from '@material-ui/icons/Backup';
 import AppBar from '@mui/material/AppBar';
 import { useHistory } from 'react-router-dom';
 import UserBadge from '../components/UserBadge';
-import AuthGroupWrapper from '../components/AuthGroupWrapper';
+// import AuthGroupWrapper from '../components/AuthGroupWrapper';
 
 const useStyles = makeStyles((theme) => ({
   rootHeader: {
@@ -49,7 +48,7 @@ function Header(props) {
             onClick={() => history.push('/')}
           />
         </div>
-        <AuthGroupWrapper requiredGroups={['admin', 'contributor']}>
+        {/* <AuthGroupWrapper requiredGroups={['admin', 'contributor']}>
           <Button
             variant="outlined"
             color="primary"
@@ -59,7 +58,7 @@ function Header(props) {
           >
             Upload
           </Button>
-        </AuthGroupWrapper>
+        </AuthGroupWrapper> */}
         <UserBadge />
       </Toolbar>
     </AppBar>

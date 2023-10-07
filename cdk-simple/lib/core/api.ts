@@ -1,4 +1,4 @@
-import { Construct } from 'constructs';
+import { Construct } from "constructs";
 import {
   aws_lambda as lambda,
   aws_cognito as cognito,
@@ -6,15 +6,16 @@ import {
   aws_sqs as sqs,
   aws_apigatewayv2 as apigv2_cfn,
   CfnOutput,
-  Duration
-} from 'aws-cdk-lib';
-import * as apigv2 from '@aws-cdk/aws-apigatewayv2-alpha';
-import { HttpUserPoolAuthorizer } from '@aws-cdk/aws-apigatewayv2-authorizers-alpha';
-import { HttpLambdaIntegration } from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
+  Duration,
+} from "aws-cdk-lib";
+import * as apigv2 from "@aws-cdk/aws-apigatewayv2-alpha";
+import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 
 interface ApplicationAPIProps {
   employeeService: lambda.IFunction;
   categoriesService: lambda.IFunction;
+  cardsService: lambda.IFunction;
   usersService: lambda.IFunction;
   publicService: lambda.IFunction;
   userPool: cognito.IUserPool;
@@ -37,11 +38,11 @@ export class ApplicationAPI extends Construct {
 
     // API Gateway ------------------------------------------------------
 
-    this.httpApi = new apigv2.HttpApi(this, 'HttpProxyApi', {
-      apiName: 'serverless-api',
+    this.httpApi = new apigv2.HttpApi(this, "HttpProxyApi", {
+      apiName: "serverless-api",
       createDefaultStage: true,
       corsPreflight: {
-        allowHeaders: ['Authorization', 'Content-Type', '*'],
+        allowHeaders: ["Authorization", "Content-Type", "*"],
         allowMethods: [
           apigv2.CorsHttpMethod.GET,
           apigv2.CorsHttpMethod.POST,
@@ -49,7 +50,11 @@ export class ApplicationAPI extends Construct {
           apigv2.CorsHttpMethod.PUT,
           apigv2.CorsHttpMethod.PATCH,
         ],
-        allowOrigins: ['http://localhost:3000', 'https://*', 'http://localhost:19006'],
+        allowOrigins: [
+          "http://localhost:3000",
+          "https://*",
+          "http://localhost:19006",
+        ],
         allowCredentials: true,
         maxAge: Duration.days(10),
       },
@@ -57,14 +62,20 @@ export class ApplicationAPI extends Construct {
 
     // Authorizer -------------------------------------------------------
 
-    const authorizer = new HttpUserPoolAuthorizer('Authorizer', props.userPool, {
-      userPoolClients: [props.userPoolClient]
-    });
+    const authorizer = new HttpUserPoolAuthorizer(
+      "Authorizer",
+      props.userPool,
+      {
+        userPoolClients: [props.userPoolClient],
+      }
+    );
 
     // Users Service ------------------------------------------------------
 
-    const usersServiceIntegration = new HttpLambdaIntegration('UsersIntegration',
-      props.usersService);
+    const usersServiceIntegration = new HttpLambdaIntegration(
+      "UsersIntegration",
+      props.usersService
+    );
 
     this.httpApi.addRoutes({
       path: `/users/{proxy+}`,
@@ -73,11 +84,12 @@ export class ApplicationAPI extends Construct {
       authorizer,
     });
 
-
     // Employee Service ------------------------------------------------------
 
-    const employeeServiceIntegration = new HttpLambdaIntegration('EmployeesIntegration',
-      props.employeeService);
+    const employeeServiceIntegration = new HttpLambdaIntegration(
+      "EmployeesIntegration",
+      props.employeeService
+    );
 
     this.httpApi.addRoutes({
       path: `/employees/{proxy+}`,
@@ -88,8 +100,10 @@ export class ApplicationAPI extends Construct {
 
     // Category Service ------------------------------------------------------
 
-    const categoryServiceIntegration = new HttpLambdaIntegration('CategoriesIntegration',
-      props.categoriesService);
+    const categoryServiceIntegration = new HttpLambdaIntegration(
+      "CategoriesIntegration",
+      props.categoriesService
+    );
 
     this.httpApi.addRoutes({
       path: `/categories/{proxy+}`,
@@ -98,57 +112,76 @@ export class ApplicationAPI extends Construct {
       authorizer,
     });
 
+    // Cards Service ------------------------------------------------------
+
+    const cardServiceIntegration = new HttpLambdaIntegration(
+      "CardsIntegration",
+      props.cardsService
+    );
+
+    this.httpApi.addRoutes({
+      path: `/cards/{proxy+}`,
+      methods: serviceMethods,
+      integration: cardServiceIntegration,
+      authorizer,
+    });
+
     // Public Service ------------------------------------------------------
 
-    const publicServiceIntegration = new HttpLambdaIntegration('PublicIntegration',
-        props.publicService);
-  
-      this.httpApi.addRoutes({
-        path: `/public/{proxy+}`,
-        methods: serviceMethods,
-        integration: publicServiceIntegration,
-        authorizer: new apigv2.HttpNoneAuthorizer(),
-      
-      });
+    const publicServiceIntegration = new HttpLambdaIntegration(
+      "PublicIntegration",
+      props.publicService
+    );
+
+    this.httpApi.addRoutes({
+      path: `/public/{proxy+}`,
+      methods: serviceMethods,
+      integration: publicServiceIntegration,
+      authorizer: new apigv2.HttpNoneAuthorizer(),
+    });
 
     // Moderate ----------------------------------------------------------
 
-    const queue = new sqs.Queue(this, 'ModerationQueue');
+    const queue = new sqs.Queue(this, "ModerationQueue");
 
-    const moderateRole = new iam.Role(this, 'ModerateRole', {
-      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+    const moderateRole = new iam.Role(this, "ModerateRole", {
+      assumedBy: new iam.ServicePrincipal("apigateway.amazonaws.com"),
     });
 
     moderateRole.addToPolicy(
       new iam.PolicyStatement({
         resources: [queue.queueArn],
-        actions: ['sqs:SendMessage'],
-      }),
+        actions: ["sqs:SendMessage"],
+      })
     );
 
-    const sqsIntegration = new apigv2_cfn.CfnIntegration(this, 'ModerateIntegration', {
-      apiId: this.httpApi.apiId,
-      integrationType: 'AWS_PROXY',
-      integrationSubtype: 'SQS-SendMessage',
-      credentialsArn: moderateRole.roleArn,
-      requestParameters: {
-        QueueUrl: queue.queueUrl,
-        MessageBody: '$request.body',
-      },
-      payloadFormatVersion: '1.0',
-      timeoutInMillis: 10000,
-    });
+    const sqsIntegration = new apigv2_cfn.CfnIntegration(
+      this,
+      "ModerateIntegration",
+      {
+        apiId: this.httpApi.apiId,
+        integrationType: "AWS_PROXY",
+        integrationSubtype: "SQS-SendMessage",
+        credentialsArn: moderateRole.roleArn,
+        requestParameters: {
+          QueueUrl: queue.queueUrl,
+          MessageBody: "$request.body",
+        },
+        payloadFormatVersion: "1.0",
+        timeoutInMillis: 10000,
+      }
+    );
 
-    new apigv2_cfn.CfnRoute(this, 'ModerateRoute', {
+    new apigv2_cfn.CfnRoute(this, "ModerateRoute", {
       apiId: this.httpApi.apiId,
-      routeKey: 'POST /moderate',
+      routeKey: "POST /moderate",
       target: `integrations/${sqsIntegration.ref}`,
     });
 
     // Outputs -----------------------------------------------------------
 
-    new CfnOutput(this, 'URL', {
-      value: this.httpApi.apiEndpoint
+    new CfnOutput(this, "URL", {
+      value: this.httpApi.apiEndpoint,
     });
   }
 }

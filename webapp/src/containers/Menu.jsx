@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@mui/material/Box';
@@ -11,10 +11,14 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
+import Collapse from '@mui/material/Collapse';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Auth } from 'aws-amplify';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useUser } from '../UserContext';
+import { getAllCategories } from '../services';
 
 const useStyles = makeStyles(() => ({
   menu: {
@@ -22,6 +26,10 @@ const useStyles = makeStyles(() => ({
     color: 'white',
   },
   menuIcon: {
+    color: '#b7d0de',
+    marginLeft: 20,
+  },
+  menuIconTree: {
     color: '#b7d0de',
     marginLeft: 20,
   },
@@ -64,10 +72,24 @@ function Menu(props) {
   const history = useHistory();
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [categories, setCategories] = React.useState([]);
+  const [open, setOpen] = React.useState(false);
   const { user } = useUser();
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
+
+  const fetchData = async () => {
+    const data = await getAllCategories();
+    console.log(data);
+    setCategories(data);
+  };
+
+  useEffect(() => {
+    (async () => {
+      await fetchData();
+    })();
+  }, []);
 
   const signOut = async () => {
     try {
@@ -81,10 +103,7 @@ function Menu(props) {
   const drawer = (
     <div>
       <div className={classes.avatarContainer}>
-        <Avatar
-          className={classes.avatar}
-          src={user.pictureURL}
-        />
+        <Avatar className={classes.avatar} src={user.pictureURL} />
         <div className={classes.name}>{user.name}</div>
         <Button onClick={signOut} className={classes.logoutButton} variant="text">
           Cerrar Sesión
@@ -128,6 +147,53 @@ function Menu(props) {
             <ListItemText primary="Categorías" />
           </ListItemButton>
         </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              setOpen(!open);
+            }}
+          >
+            <ListItemIcon className={classes.menuIcon}>
+              <Diversity3Icon />
+            </ListItemIcon>
+            <ListItemText primary="Cartas" />
+            {open ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={open} timeout="auto" unmountOnExit>
+          <List component="div">
+            {categories.map((category) => (
+              <ListItem key={category.name}>
+                <ListItemButton
+                  onClick={() => {
+                    history.push({
+                      pathname: `/cards/${category.PK}`,
+                      state: { category },
+                    });
+                  }}
+                >
+                  <ListItemIcon className={classes.menuIcon}>
+                    <Diversity3Icon />
+                  </ListItemIcon>
+                  <ListItemText primary={category.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
+
+        {/* <ListItem>
+          <ListItemButton
+            onClick={() => {
+              history.push('/cards');
+            }}
+          >
+            <ListItemIcon className={classes.menuIcon}>
+              <Diversity3Icon />
+            </ListItemIcon>
+            <ListItemText primary="Cartas" />
+          </ListItemButton>
+        </ListItem> */}
       </List>
       <Divider />
     </div>
@@ -141,7 +207,6 @@ function Menu(props) {
       sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
       aria-label="mailbox folders"
     >
-      {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
       <Drawer
         className={classes.menu}
         container={container}

@@ -4,6 +4,7 @@ import { Construct } from 'constructs';
 export class AppDatabase extends Construct {
   public readonly employeeTable: dynamodb.ITable;
   public readonly categoriesTable: dynamodb.ITable;
+  public readonly cardsTable: dynamodb.ITable;
   
   constructor(scope: Construct, id: string) {
     super(scope, id);
@@ -69,5 +70,36 @@ export class AppDatabase extends Construct {
       });
       
       this.categoriesTable = categoriesTable;
+
+         // Categories table ------------------
+
+         const cardsTable = new dynamodb.Table(this, 'CardTable', {
+          billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+          partitionKey: {
+            name: 'PK',
+            type: dynamodb.AttributeType.STRING,
+          },
+          sortKey: {
+            name: 'categoryId',
+            type: dynamodb.AttributeType.STRING,
+          },
+        });
+    
+        cardsTable.addGlobalSecondaryIndex({
+          // indexName: 'status',
+          indexName: 'GSI1',
+          partitionKey: {
+            name: 'categoryId',
+            type: dynamodb.AttributeType.STRING,
+          },
+          sortKey: {
+            name: 'PK',
+            type: dynamodb.AttributeType.STRING,
+          },
+          projectionType: dynamodb.ProjectionType.ALL,
+          // nonKeyAttributes: ['name', 'lastname'],
+        });
+        
+        this.cardsTable = cardsTable;
   }
 }

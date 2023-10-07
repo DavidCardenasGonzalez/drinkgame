@@ -8,25 +8,16 @@ import {
   RouterType,
   Matcher,
 } from "lambda-micro";
-import {
-  AWSClients,
-  generateID,
-  generateUpdateExpressions,
-  generateGame,
-} from "../common";
-
-// Get the User Pool ID
-const userPoolId = process.env.USER_POOL_ID;
-const cisp = AWSClients.cisp();
+import { AWSClients, generateID, generateUpdateExpressions } from "../common";
 const s3 = AWSClients.s3();
 const dynamoDB = AWSClients.dynamoDB();
 const tableName = process.env.DYNAMO_DB_TABLE;
-const cardsName = process.env.CARDS_DB_TABLE;
 
 // These are JSON schemas that are used to validate requests to the service
 const schemas = {
   idPathVariable: require("./schemas/idPathVariable.json"),
-  createCategory: require("./schemas/createCategory.json"),
+  categoryIdPathVariable: require("./schemas/categoryIdPathVariable.json"),
+  createCard: require("./schemas/createCard.json"),
 };
 //------------------------------------------------------------------------
 // UTILITY FUNCTIONS
@@ -46,7 +37,7 @@ const getSignedURL = async (picture) => {
 const uploadPhotoToS3 = async (id, type, formFile) => {
   const params = {
     Bucket: process.env.ASSET_BUCKET,
-    Key: `category/${id}/${type}${path.extname(formFile.fileName)}`,
+    Key: `cards/${id}/${type}${path.extname(formFile.fileName)}`,
     Body: formFile.content,
     ContentType: formFile.contentType,
   };
@@ -59,8 +50,8 @@ const uploadPhotoToS3 = async (id, type, formFile) => {
 //------------------------------------------------------------------------
 
 // Get all documents
-const getAllCategories = async (request, response) => {
-  console.log("getAllCategories");
+const getAllCards = async (request, response) => {
+  console.log("getAllCards");
   const params = {
     TableName: tableName,
     IndexName: "GSI1",
@@ -77,7 +68,7 @@ const getAllCategories = async (request, response) => {
   return response.output(results.Items, 200);
 };
 
-const getCategory = async (request, response) => {
+const getCard = async (request, response) => {
   const categoryId = request.pathVariables.id;
   console.log(categoryId);
   const params = {
@@ -89,16 +80,32 @@ const getCategory = async (request, response) => {
   };
   const results = await dynamoDB.query(params).promise();
   const category = results.Items[0];
-  if (category.avatar) {
-    category.avatarURL = await getSignedURL(category.avatar);
+  if (category.image1) {
+    category.image1URL = await getSignedURL(category.image1);
   }
-  if (category.background) {
-    category.backgroundURL = await getSignedURL(category.background);
+  if (category.image2) {
+    category.image2URL = await getSignedURL(category.image2);
   }
   return response.output(category, 200);
 };
 
-const createCategory = async (request, response) => {
+const getCategoryCards = async (request, response) => {
+  const categoryId = request.pathVariables.categoryId;
+
+  const params = {
+    TableName: tableName,
+    IndexName: "GSI1",
+    KeyConditionExpression: "categoryId = :category_id",
+    ExpressionAttributeValues: {
+      ":category_id": categoryId,
+    },
+  };
+  console.log(params);
+  const results = await dynamoDB.query(params).promise();
+  return response.output(results.Items, 200);
+};
+
+const createCard = async (request, response) => {
   const fields = JSON.parse(request.event.body);
   console.log(fields);
   if (fields.PK) {
@@ -127,25 +134,7 @@ const createCategory = async (request, response) => {
   }
 };
 
-const simulateCategory = async (request, response) => {
-  const { categoryId, members } = JSON.parse(request.event.body);
-
-  const params = {
-    TableName: cardsName,
-    IndexName: "GSI1",
-    KeyConditionExpression: "categoryId = :category_id",
-    ExpressionAttributeValues: {
-      ":category_id": categoryId,
-    },
-  };
-  console.log(params);
-  const results = await dynamoDB.query(params).promise();
-
-  const game = generateGame(results.Items, members);
-  return response.output(game, 200);
-};
-
-const updateCategoryPicture = async (request, response) => {
+const updateCardPicture = async (request, response) => {
   const { fields } = request.formData;
 
   // Check if we need to delete photo
@@ -160,7 +149,7 @@ const updateCategoryPicture = async (request, response) => {
     const results = await dynamoDB.query(params).promise();
     const category = results.Items[0];
     const photoKey =
-      fields.type == "avatar" ? category.avatar : category.background;
+      fields.type == "image1" ? category.image1 : category.image2;
     console.log(photoKey);
     // Delete file
     if (photoKey) {
@@ -171,19 +160,19 @@ const updateCategoryPicture = async (request, response) => {
       await s3.deleteObject(deleteParams).promise();
     }
     const expressions = generateUpdateExpressions(
-      fields.type == "avatar"
+      fields.type == "image1"
         ? {
-            avatar: "",
+            image1: '',
           }
         : {
-            background: "",
+            image2: '',
           }
     );
     const updateParams = {
       TableName: tableName,
       Key: {
         PK: fields.PK,
-        status: fields.status,
+        categoryId: fields.categoryId,
       },
       UpdateExpression: expressions.updateExpression,
       ExpressionAttributeValues: expressions.expressionAttributeValues,
@@ -202,14 +191,14 @@ const updateCategoryPicture = async (request, response) => {
   // Check to See if we need to update name in cognito
   if (fields && fields.PK) {
     const expressions = generateUpdateExpressions(
-      fields.type == "avatar"
+      fields.type == "image1"
         ? {
-            avatar: `category/${fields.PK}/${fields.type}${path.extname(
+            image1: `cards/${fields.PK}/${fields.type}${path.extname(
               formFile.fileName
             )}`,
           }
         : {
-            background: `category/${fields.PK}/${fields.type}${path.extname(
+            image2: `cards/${fields.PK}/${fields.type}${path.extname(
               formFile.fileName
             )}`,
           }
@@ -218,7 +207,7 @@ const updateCategoryPicture = async (request, response) => {
       TableName: tableName,
       Key: {
         PK: fields.PK,
-        status: fields.status,
+        categoryId: fields.categoryId,
       },
       UpdateExpression: expressions.updateExpression,
       ExpressionAttributeValues: expressions.expressionAttributeValues,
@@ -236,37 +225,38 @@ const updateCategoryPicture = async (request, response) => {
 
 const router = createRouter(RouterType.HTTP_API_V2);
 router.add(
-  Matcher.HttpApiV2("GET", "/categories/"),
+  Matcher.HttpApiV2("GET", "/cards/"),
   enforceGroupMembership(["admin", "manager"]),
-  getAllCategories
+  getAllCards
 );
 router.add(
-  Matcher.HttpApiV2("POST", "/categories/"),
+  Matcher.HttpApiV2("POST", "/cards/"),
   enforceGroupMembership(["admin", "manager"]),
-  validateBodyJSONVariables(schemas.createCategory),
-  createCategory
+  validateBodyJSONVariables(schemas.createCard),
+  createCard
 );
 router.add(
-  Matcher.HttpApiV2("GET", "/categories(/:id)"),
+  Matcher.HttpApiV2("GET", "/cards(/:id)"),
   enforceGroupMembership("admin", "manager"),
   validatePathVariables(schemas.idPathVariable),
-  getCategory
+  getCard
 );
 
 router.add(
-  Matcher.HttpApiV2("POST", "/categories/actions/simulate"),
-  enforceGroupMembership(["admin", "manager"]),
-  simulateCategory
+  Matcher.HttpApiV2("GET", "/cards/category(/:categoryId)"),
+  enforceGroupMembership("admin", "manager"),
+  validatePathVariables(schemas.categoryIdPathVariable),
+  getCategoryCards
 );
 
 router.add(
-  Matcher.HttpApiV2("PATCH", "/categories/actions/updatePicture"),
+  Matcher.HttpApiV2("PATCH", "/cards/actions/updatePicture"),
   parseMultipartFormData,
-  updateCategoryPicture
+  updateCardPicture
 );
 
 // router.add(
-//   Matcher.HttpApiV2('DELETE', '/categories(/:id)'),
+//   Matcher.HttpApiV2('DELETE', '/cards(/:id)'),
 //   enforceGroupMembership('admin'),
 //   validatePathVariables(schemas.idPathVariable),
 //   deleteUser,
