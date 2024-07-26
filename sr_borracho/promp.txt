@@ -4,7 +4,7 @@ El objeto de una categoy debe tener la siguien estructura { name: "Categoria", d
 
 Se deben remover todas las funciones que no sean necesarias.
 
-cuando se hace click en juego de la lista te redirige a la pantalla play, mandando los parametros playersList y la categoria seleccionada
+cuando se hace click en juego de la lista te redirige a la pantalla play, mandando los parametros playerList y la categoria seleccionada
 
 la lista debe mostrar en la parte izquierda la imagen en caso de tener la categoría "isPremium" debe venir la imagen opaca con un icono de un candando.
 

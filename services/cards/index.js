@@ -219,6 +219,21 @@ const updateCardPicture = async (request, response) => {
   // Return current user after updates
   return response.output({}, 200);
 };
+
+const deleteCard = async (request, response) => {
+  const cardId = request.pathVariables.id;
+  const categoryId = request.pathVariables.categoryId;
+  const params = {
+    TableName: tableName,
+    Key: {
+      PK: cardId,
+      categoryId,
+    },
+  };
+  console.log(params);
+  await dynamoDB.delete(params).promise();
+  return response.output({}, 200);
+}
 //------------------------------------------------------------------------
 // LAMBDA ROUTER
 //------------------------------------------------------------------------
@@ -255,12 +270,12 @@ router.add(
   updateCardPicture
 );
 
-// router.add(
-//   Matcher.HttpApiV2('DELETE', '/cards(/:id)'),
-//   enforceGroupMembership('admin'),
-//   validatePathVariables(schemas.idPathVariable),
-//   deleteUser,
-// );
+router.add(
+  Matcher.HttpApiV2('DELETE', '/cards(/:id)/category(/:categoryId)'),
+  enforceGroupMembership('admin'),
+  validatePathVariables(schemas.idPathVariable),
+  deleteCard,
+);
 
 // Lambda Handler
 exports.handler = async (event, context) => {

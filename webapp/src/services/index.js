@@ -147,6 +147,14 @@ export const getCategory = async (id) => {
   return results.data;
 };
 
+export const deleteCategory = async (id) => {
+  console.log('deleteCard', id);
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.delete(`${SERVICES_HOST}/categories/${id}`);
+};
+
 export const updateCategoryProfile = async (PK, status, shouldDeletePicture, picture, type) => {
   if (!client) {
     await createAPIClient();
@@ -210,6 +218,14 @@ export const getCard = async (id) => {
   }
   const results = await client.get(`${SERVICES_HOST}/cards/${id}`);
   return results.data;
+};
+
+export const deleteCard = async (id, categoryId) => {
+  console.log('deleteCard', id);
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.delete(`${SERVICES_HOST}/cards/${id}/category/${categoryId}`);
 };
 
 export const updateCardProfile = async (PK, categoryId, shouldDeletePicture, picture, type) => {

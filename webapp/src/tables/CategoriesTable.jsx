@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import MUIDataTable from 'mui-datatables';
 import { makeStyles } from '@material-ui/core/styles';
 import LinkCell from '../components/DataGrid/LinkCell';
-import { deleteUser, getAllCategories } from '../services';
+import { deleteCategory, getAllCategories } from '../services';
 import LoadingView from '../components/LoadingView';
 import { getFormattedDate } from '../util';
 
@@ -54,6 +54,16 @@ export default function CategoriesTable() {
       },
     },
     {
+      name: 'order',
+      label: 'Orden',
+      options: {
+        filter: false,
+        // filterType: 'textField',
+        // customFilterListOptions: { render: (v) => `Estado: ${v}` },
+        sort: true,
+      },
+    },
+    {
       name: 'date',
       label: 'Creado',
       options: {
@@ -76,9 +86,13 @@ export default function CategoriesTable() {
     fixedSelectColumn: false,
     print: false,
     download: false,
+    sortOrder: {
+      name: 'order',
+      direction: 'asc',
+    },
     onRowsDelete: (rowsDeleted) => {
-      const itemIdsToDelete = rowsDeleted.data.map((i) => tableData[i.dataIndex].userId);
-      return Promise.all(itemIdsToDelete.map((id) => deleteUser(id)));
+      const itemIdsToDelete = rowsDeleted.data.map((i) => tableData[i.dataIndex].PK);
+      return Promise.all(itemIdsToDelete.map((id) => deleteCategory(id)));
     },
   };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
 import {
   Grid,
@@ -11,10 +11,12 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
 } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import PermIdentityIcon from '@material-ui/icons/PermIdentity';
 import CircularProgress from '@mui/material/CircularProgress';
+import EditIcon from '@mui/icons-material/Edit';
 import Page from '../containers/Page';
 import { getCategory, simulateCategory } from '../services';
 
@@ -48,6 +50,11 @@ const useStyles = makeStyles((theme) => ({
   },
   stepperContainer: {
     margin: 15,
+  },
+  listItem: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
 }));
 
@@ -158,7 +165,7 @@ function SimulateCategory() {
           <CardContent>
             {members.map((member, index) => (
               <>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} key={member.name}>
                   <Grid item sm={6}>
                     <TextField
                       id="name"
@@ -192,7 +199,17 @@ function SimulateCategory() {
             ))}
             <ul>
               {game.map((item) => (
-                <li>{item.displayText}</li>
+                <li key={item.PK} className={classes.listItem}>
+                  {item.displayText}
+                  <IconButton
+                    component={Link}
+                    to={`/cards/${item.categoryId}/${item.PK}`}
+                    color="primary"
+                    aria-label="edit"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                </li>
               ))}
             </ul>
           </CardContent>

@@ -81,8 +81,9 @@ function Menu(props) {
 
   const fetchData = async () => {
     const data = await getAllCategories();
-    console.log(data);
-    setCategories(data);
+    const cats = data.sort((a, b) => a.order - b.order)
+      .filter((category) => category.status === 'active');
+    setCategories(cats);
   };
 
   useEffect(() => {

@@ -67,6 +67,7 @@ function CategoryCreate() {
   const [description, setDescription] = useState('');
   const [order, setOrder] = useState('');
   const [isPremium, setIsPremium] = useState(false);
+  const [haveAlcohol, setHaveAlcohol] = useState(false);
   const [status, setStatus] = useState('active');
   const [originalCategory, setOrignalCategory] = useState({});
   const [isSuccessVisible, setIsSuccessVisible] = useState(false);
@@ -102,7 +103,7 @@ function CategoryCreate() {
       return;
     }
     setIsValid(true);
-  }, [name, description, order, status, isPremium]);
+  }, [name, description, order, status]);
 
   useEffect(() => {
     (async () => {
@@ -116,6 +117,7 @@ function CategoryCreate() {
       setOrder(data.order);
       setStatus(data.status);
       setIsPremium(data.isPremium);
+      setHaveAlcohol(data.haveAlcohol);
       if (data.avatarURL) {
         setAvatarImageURL(data.avatarURL);
       }
@@ -135,6 +137,7 @@ function CategoryCreate() {
         order,
         status,
         isPremium,
+        haveAlcohol,
       });
     } catch (err) {
       setSubmitting(false);
@@ -303,7 +306,7 @@ function CategoryCreate() {
                   <TextField
                     id="description"
                     className={classes.input}
-                    label="DEscripción"
+                    label="Descripción"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     required
@@ -334,17 +337,6 @@ function CategoryCreate() {
                       <MenuItem value="inactive">Inactive</MenuItem>
                     </Select>
                   </FormControl>
-                  <TextField
-                    id="status"
-                    className={classes.input}
-                    label="status"
-                    type="email"
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    disabled={submitting}
-                    required
-                    fullWidth
-                  />
                   <FormControlLabel
                     control={(
                       <Checkbox
@@ -355,6 +347,17 @@ function CategoryCreate() {
                       />
                     )}
                     label="¿Es premium?"
+                  />
+                  <FormControlLabel
+                    control={(
+                      <Checkbox
+                        checked={haveAlcohol}
+                        disabled={submitting}
+                        onChange={() => setHaveAlcohol(!haveAlcohol)}
+                        color="primary" // Opcional, puedes personalizar el color del checkbox
+                      />
+                    )}
+                    label="¿Tiene alcohol?"
                   />
                 </div>
               ) : null}
@@ -487,7 +490,7 @@ function CategoryCreate() {
             startIcon={getButtonIcon()}
             onClick={createCategoryF}
           >
-            Crear Categoría
+            {originalCategory && originalCategory.PK ? 'Actualizar' : 'Crear Categoria'}
           </Button>
         </Grid>
       </Grid>

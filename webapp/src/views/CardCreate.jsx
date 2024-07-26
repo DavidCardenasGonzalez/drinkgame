@@ -317,7 +317,7 @@ function CardCreate() {
                       disabled={submitting}
                       required
                     >
-                      <MenuItem value="simple">Simple</MenuItem>
+                      <MenuItem value="text">Texto</MenuItem>
                       <MenuItem value="question">Question</MenuItem>
                       <MenuItem value="virus">Virus</MenuItem>
                     </Select>

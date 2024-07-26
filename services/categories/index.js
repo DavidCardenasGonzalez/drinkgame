@@ -63,17 +63,17 @@ const getAllCategories = async (request, response) => {
   console.log("getAllCategories");
   const params = {
     TableName: tableName,
-    IndexName: "GSI1",
-    KeyConditionExpression: "#category_status = :status ",
-    ExpressionAttributeValues: {
-      ":status": "active",
-    },
-    ExpressionAttributeNames: {
-      "#category_status": "status",
-    },
+    // IndexName: "GSI1",
+    // KeyConditionExpression: "#category_status = :status ",
+    // ExpressionAttributeValues: {
+    //   ":status": "active",
+    // },
+    // ExpressionAttributeNames: {
+    //   "#category_status": "status",
+    // },
   };
   console.log(params);
-  const results = await dynamoDB.query(params).promise();
+  const results = await dynamoDB.scan(params).promise();
   return response.output(results.Items, 200);
 };
 
@@ -114,7 +114,7 @@ const createCategory = async (request, response) => {
     const item = {
       ...fields,
       PK: categoryId,
-      status: "active",
+      status: fields.status ?? "active",
       date: new Date().toISOString(),
     };
     const params = {
@@ -141,7 +141,7 @@ const simulateCategory = async (request, response) => {
   console.log(params);
   const results = await dynamoDB.query(params).promise();
 
-  const game = generateGame(results.Items, members);
+  const game = generateGame([results.Items], members);
   return response.output(game, 200);
 };
 
@@ -218,7 +218,6 @@ const updateCategoryPicture = async (request, response) => {
       TableName: tableName,
       Key: {
         PK: fields.PK,
-        status: fields.status,
       },
       UpdateExpression: expressions.updateExpression,
       ExpressionAttributeValues: expressions.expressionAttributeValues,
@@ -230,6 +229,19 @@ const updateCategoryPicture = async (request, response) => {
   // Return current user after updates
   return response.output({}, 200);
 };
+
+const deleteCategory = async (request, response) => {
+  const categoryId = request.pathVariables.id;
+  const params = {
+    TableName: tableName,
+    Key: {
+      PK: categoryId,
+    },
+  };
+  console.log(params);
+  await dynamoDB.delete(params).promise();
+  return response.output({}, 200);
+}
 //------------------------------------------------------------------------
 // LAMBDA ROUTER
 //------------------------------------------------------------------------
@@ -265,12 +277,12 @@ router.add(
   updateCategoryPicture
 );
 
-// router.add(
-//   Matcher.HttpApiV2('DELETE', '/categories(/:id)'),
-//   enforceGroupMembership('admin'),
-//   validatePathVariables(schemas.idPathVariable),
-//   deleteUser,
-// );
+router.add(
+  Matcher.HttpApiV2('DELETE', '/categories(/:id)'),
+  enforceGroupMembership('admin'),
+  validatePathVariables(schemas.idPathVariable),
+  deleteCategory,
+);
 
 // Lambda Handler
 exports.handler = async (event, context) => {

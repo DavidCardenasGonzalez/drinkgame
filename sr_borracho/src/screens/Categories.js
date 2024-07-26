@@ -2,161 +2,209 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
   FlatList,
   TouchableOpacity,
   Image,
+  ImageBackground,
 } from "react-native";
 import { getAllCategories } from "../../src/services";
 
 const CategoryList = ({ route, navigation }) => {
   const [categoryList, setCategoryList] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState({});
 
   useEffect(() => {
-    // Función que hace la llamada al API y actualiza el estado de categoryList
-    // const fetchCategories = async () => {
-    //   try {
-    //     const response = await fetch("https://api.example.com/categories", {
-    //       method: "POST",
-    //       body: JSON.stringify(route.params.players),
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //       },
-    //     });
-    //     const categories = await response.json();
-    //     setCategoryList(categories);
-    //   } catch (error) {
-    //     console.error(error);
-    //   }
-    // };
-    // fetchCategories();
     getAllCategories().then(function (res) {
-      setCategoryList(res);
+      setCategoryList(
+        res.sort((a, b) => a.order - b.order)
+      );
     });
-    // setCategoryList([
-    //   {
-    //     name: "Categoria",
-    //     description: "Descripcion",
-    //     image: "https://picsum.photos/200/300",
-    //     isPremium: false,
-    //   },
-    //   {
-    //     name: "Categoria 2",
-    //     description: "Descripcion Premium",
-    //     image: "https://picsum.photos/200/300",
-    //     isPremium: true,
-    //   },
-    // ]);
-  }, [route.params.players]);
+  }, [route.params.playerList]);
 
   const handleCategoryPress = (category) => {
-    navigation.navigate("Play", {
-      playersList: route.params.players,
-      selectedCategory: category,
+    setSelectedCategories((prevSelectedCategories) => {
+      const newSelectedCategories = { ...prevSelectedCategories };
+      if (newSelectedCategories[category.name]) {
+        delete newSelectedCategories[category.name];
+      } else {
+        newSelectedCategories[category.name] = category;
+      }
+      return newSelectedCategories;
     });
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Selecciona la categoria</Text>
-      <FlatList
-        data={categoryList}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.category}
-            onPress={() => handleCategoryPress(item)}
-          >
-            <View style={styles.categoryImage}>
-              {item.isPremium && (
-                <View style={styles.lockIconContainer}>
-                  <Image
-                    source={require("../../assets/lock.png")}
-                    style={styles.lockIcon}
-                  />
-                </View>
-              )}
+  const renderCategory = ({ item }) => {
+    const isSelected = selectedCategories[item.name];
+    return (
+      <TouchableOpacity
+        style={[
+          styles.category,
+          isSelected && styles.categorySelected
+        ]}
+        onPress={() => handleCategoryPress(item)}
+      >
+        <View style={styles.categoryImageContainer}>
+          {/* {item.isPremium && (
+            <View style={styles.lockIconContainer}>
               <Image
-                source={{ uri: item.avatarURL }}
-                style={
-                  item.isPremium
-                    ? styles.categoryImageLock
-                    : styles.categoryImage
-                }
+                source={require("../../assets/lock.png")}
+                style={styles.lockIcon}
               />
             </View>
-            <View style={styles.categoryInfo}>
-              <Text style={styles.categoryName}>{item.name}</Text>
-              <Text style={styles.categoryDescription}>{item.description}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        keyExtractor={(item) => item.name}
-      />
-    </View>
+          )} */}
+          <Image
+            source={{ uri: item.avatarURL }}
+            style={[
+              styles.categoryImage,
+              item.isPremium && styles.categoryImageLock
+            ]}
+          />
+        </View>
+        <Text style={styles.categoryName}>{item.name}</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  return (
+    <ImageBackground
+      source={require("../../assets/background.jpg")}
+      style={styles.background}
+      imageStyle={{ opacity: 0.5 }}
+    >
+      <View style={styles.container}>
+        <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
+        {
+          Object.keys(selectedCategories).length === 0 ? (
+            <Text style={styles.title}>Selecciona al menos una categoría</Text>
+          ) : (
+            <Text style={styles.title}>{Object.keys(selectedCategories).length} categorías seleccionadas</Text>
+          )
+          
+        }
+        <FlatList
+          data={categoryList}
+          renderItem={renderCategory}
+          keyExtractor={(item) => item.name}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.contentContainer}
+        />
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => {
+            navigation.navigate("Game", {
+              playerList: route.params.playerList,
+              selectedCategories: Object.values(selectedCategories),
+            });
+          }}
+          disabled={Object.keys(selectedCategories).length === 0}
+        >
+          <Text style={styles.buttonText}>JUGAR</Text>
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#2E2E2E",
+  background: {
     flex: 1,
+    resizeMode: "cover",
+    backgroundColor: "black",
+  },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  logo: {
+    width: 250,
+    height: 65,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#FFF",
-    margin: 20,
-    alignSelf: "center",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  contentContainer: {
+    paddingHorizontal: 10,
+    marginTop: 40,
+  },
+  row: {
+    flex: 1,
+    justifyContent: "space-between",
+    marginBottom: 25,
   },
   category: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 10,
-    marginHorizontal: 20,
+    flex: 1,
     backgroundColor: "#3b3939",
-    borderRadius: 25,
-    padding: 10,
+    borderRadius: 15,
+    padding: 0,
+    marginHorizontal: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    borderColor: "#2b2626",
+    borderWidth: 5,
+  },
+  categorySelected: {
+    backgroundColor: "#ccb5af",
+    borderColor: "#a8553b",
+  },
+  categoryImageContainer: {
+    position: "relative",
+    width: '100%',
+    minWidth: 150,
+    height: 100,
   },
   categoryImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    height: '140px',
+    marginTop: '-30px',
   },
   categoryImageLock: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    opacity: "0.5",
+    // opacity: 0.5,
   },
   lockIconContainer: {
     position: "absolute",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    width: 100,
-    height: 100,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 50,
-    // opacity: '0.5',
   },
   lockIcon: {
-    width: 50,
-    height: 50,
-    // tintColor: "white",
-    zIndex: 10,
-  },
-  categoryInfo: {
-    flex: 1,
-    marginLeft: 20,
+    width: 40,
+    height: 40,
   },
   categoryName: {
-    fontSize: 22,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#FFF",
+    marginTop: 10,
+    textAlign: "center",
   },
-  categoryDescription: {
-    fontSize: 16,
+  button: {
+    backgroundColor: "#0F3F81",
+    padding: 15,
+    borderRadius: 30,
+    alignItems: "center",
+    width: "80%",
+    marginTop: 20,
+    borderWidth: 3,
+    borderColor: "#FFF",
+  },
+  buttonText: {
     color: "#FFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });
 

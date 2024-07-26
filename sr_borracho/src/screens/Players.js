@@ -6,28 +6,27 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  ImageBackground,
   Image,
+  useWindowDimensions,
 } from "react-native";
+import { MaterialIcons } from '@expo/vector-icons'; // Asegúrate de tener @expo/vector-icons instalado
 
 const PlayerList = ({ navigation }) => {
   const [playerList, setPlayerList] = useState([
-    { name: "playerName", gender: "male" },
+    { name: "Octavio" },
+    { name: "Rafael" },
   ]);
   const [playerName, setPlayerName] = useState("");
+  const { height } = useWindowDimensions();
 
   const addPlayer = () => {
     if (!playerName) {
       return;
     }
-    const player = { name: playerName, gender: "male" };
+    const player = { name: playerName };
     setPlayerList([...playerList, player]);
     setPlayerName("");
-  };
-
-  const changeGender = (index) => {
-    const players = [...playerList];
-    players[index].gender = players[index].gender == "male" ? "female" : "male";
-    setPlayerList(players);
   };
 
   const deletePlayer = (index) => {
@@ -37,179 +36,150 @@ const PlayerList = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Agrega a los jugadores</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Agregar jugador"
-        value={playerName}
-        onChangeText={(value) => setPlayerName(value)}
-        onBlur={addPlayer}
-      />
-      <FlatList
-        data={playerList}
-        renderItem={({ item, index }) => (
-          <View style={styles.player}>
-            <Text style={styles.playerName}>{item.name}</Text>
-            <View style={styles.playerOptions}>
-              <TouchableOpacity
-                style={
-                  item.gender == "male" ? styles.maleIcon : styles.femaleIcon
-                }
-                onPress={() => changeGender(index)}
-              >
-                <Image
-                  source={
-                    item.gender == "male"
-                      ? require("../../assets/man.png")
-                      : require("../../assets/woman.png")
-                  }
-                  style={styles.genderIcon}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.deleteIcon}
-                onPress={() => deletePlayer(index)}
-              >
-                <Image
-                  source={require("../../assets/trash.png")}
-                  style={styles.deleteIcon}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+    <ImageBackground
+      source={require("../../assets/background.jpg")}
+      style={styles.background}
+      imageStyle={{ opacity: 0.5 }}
+    >
+      <View style={styles.container}>
+        <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
+        {height >= 800 && (
+          <Image source={require("../../assets/octavio.png")} style={styles.person} />
         )}
-        keyExtractor={(item, index) => index.toString()}
-      />
-      <TouchableOpacity style={styles.button} onPress={() => {
-         navigation.navigate('Categories', {
-          playerList
-        });
-      }}>
-        <Text style={styles.buttonText}>JUGAR</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.gearIcon}
-        onPress={() => alert("Engranaje!")}
-      >
-        <Image
-          source={require("../../assets/icon.png")}
-          style={styles.gearIcon}
-        />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.starIcon}
-        onPress={() => alert("Estrella!")}
-      >
-        <Image
-          source={require("../../assets/icon.png")}
-          style={styles.starIcon}
-        />
-      </TouchableOpacity>
-    </View>
+        <ImageBackground
+          source={require("../../assets/wall.jpg")}
+          style={styles.formContainer}
+          imageStyle={styles.formBackground}
+        >
+          <Text style={styles.title}>Agrega a los jugadores</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Agregar jugador"
+            value={playerName}
+            onChangeText={(value) => setPlayerName(value)}
+            onSubmitEditing={addPlayer}
+          />
+          <FlatList
+            data={playerList}
+            renderItem={({ item, index }) => (
+              <View style={styles.player}>
+                <Text style={styles.playerName}>{item.name}</Text>
+                <TouchableOpacity
+                  style={styles.deleteIcon}
+                  onPress={() => deletePlayer(index)}
+                >
+                  <MaterialIcons name="close" size={22} color="white" />
+                </TouchableOpacity>
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
+        </ImageBackground>
+        <TouchableOpacity
+          // style={styles.button}
+          style={[styles.button, playerList.length < 1 && styles.buttonDisabled]}
+          disabled={playerList.length < 1}
+          onPress={() => {
+            navigation.navigate('Categories', {
+              playerList
+            });
+          }}
+        >
+          <Text style={styles.buttonText}>JUGAR</Text>
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: "#2E2E2E",
+  background: {
     flex: 1,
+    resizeMode: "cover",
+    backgroundColor: "black",
+  },
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  logo: {
+    width: 250,
+    height: 65,
+    // marginBottom: 20,
+  },
+  person: {
+    width: 230,
+    height: 230,
+    marginBottom: -20,
+  },
+  formContainer: {
+    borderRadius: 10,
+    padding: 20,
+    height: "55%",
+    marginBottom: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 10,
+    borderColor: "#4d4d4d",
+    // shadowColor: "#888888",
+    // shadowOffset: { width: 10, height: 10 },
+    // shadowOpacity: 1,
+    // shadowRadius: 5,
+  },
+  formBackground: {
+    borderRadius: 10,
+    height: "100%",
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#FFF",
-    margin: 20,
-    alignSelf: "center",
+    marginBottom: 20,
+    textAlign: "center",
   },
   input: {
     backgroundColor: "#FFF",
-    margin: 10,
-    padding: 10,
+    padding: 15,
     borderRadius: 10,
-    height: 60,
-    fontSize: 22,
+    // marginBottom: 20,
+    fontSize: 18,
+    width: "100%",
   },
   player: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 2,
     justifyContent: "space-between",
-    marginVertical: 10,
-    padding: 10,
-    margin: 10,
-    backgroundColor: "#3b3939",
-    borderRadius: 25,
-  },
-  playerOptions: {
-    flexDirection: "row",
-    alignItems: "right",
+    width: "100%",
+    minWidth: 100,
+    // marginBottom: 10,
   },
   playerName: {
-    fontSize: 22,
-    fontWeight: 600,
     color: "#FFF",
-    marginLeft: 10,
-    whiteSpace: "pre-wrap",
-    overflowWrap: "break-word",
-    wordBreak: "break-all",
-  },
-  maleIcon: {
-    height: 50,
-    width: 50,
-    backgroundColor: "#0F3F81",
-    borderRadius: 10,
-    borderColor: "#fff",
-    borderWidth: 1,
-    marginRight: 20,
-  },
-  femaleIcon: {
-    height: 50,
-    width: 50,
-    backgroundColor: "#AF1F6E",
-    borderRadius: 10,
-    borderColor: "#fff",
-    borderWidth: 1,
-    marginRight: 20,
-  },
-  genderIcon: {
-    height: 40,
-    width: 40,
-    margin: 4,
-    // marginLeft: 30,
+    fontSize: 18,
+    fontFamily: "ChalkboardSE-Regular", // Necesitarás una fuente de tiza instalada
   },
   deleteIcon: {
-    height: 50,
-    width: 50,
-    // marginLeft: 30,
+    padding: 10,
   },
   button: {
     backgroundColor: "#0F3F81",
+    padding: 15,
+    borderRadius: 30,
+    alignItems: "center",
     width: "80%",
-    padding: 10,
-    borderRadius: 10,
-    margin: 10,
-    alignSelf: "center",
+    // marginTop: 20,
+    borderWidth: 3,
+    borderColor: "#FFF",
   },
   buttonText: {
-    fontSize: 40,
-    fontWeight: "bold",
     color: "#FFF",
-    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
   },
-  gearIcon: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    height: 20,
-    width: 20,
-  },
-  starIcon: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    height: 20,
-    width: 20,
+  buttonDisabled: {
+    opacity: 0.5,
   },
 });
 

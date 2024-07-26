@@ -48,26 +48,26 @@ export class AppDatabase extends Construct {
           name: 'PK',
           type: dynamodb.AttributeType.STRING,
         },
-        sortKey: {
-          name: 'status',
-          type: dynamodb.AttributeType.STRING,
-        },
+        // sortKey: {
+        //   name: 'status',
+        //   type: dynamodb.AttributeType.STRING,
+        // },
       });
   
-      categoriesTable.addGlobalSecondaryIndex({
-        // indexName: 'status',
-        indexName: 'GSI1',
-        partitionKey: {
-          name: 'status',
-          type: dynamodb.AttributeType.STRING,
-        },
-        sortKey: {
-          name: 'PK',
-          type: dynamodb.AttributeType.STRING,
-        },
-        projectionType: dynamodb.ProjectionType.ALL,
-        // nonKeyAttributes: ['name', 'lastname'],
-      });
+      // categoriesTable.addGlobalSecondaryIndex({
+      //   // indexName: 'status',
+      //   indexName: 'GSI1',
+      //   partitionKey: {
+      //     name: 'status',
+      //     type: dynamodb.AttributeType.STRING,
+      //   },
+      //   sortKey: {
+      //     name: 'PK',
+      //     type: dynamodb.AttributeType.STRING,
+      //   },
+      //   projectionType: dynamodb.ProjectionType.ALL,
+      //   // nonKeyAttributes: ['name', 'lastname'],
+      // });
       
       this.categoriesTable = categoriesTable;
 

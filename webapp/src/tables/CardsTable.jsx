@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import MUIDataTable from 'mui-datatables';
 import { makeStyles } from '@material-ui/core/styles';
 import LinkCell from '../components/DataGrid/LinkCell';
-import { deleteUser, getCategoryCards } from '../services';
+import { deleteCard, getCategoryCards } from '../services';
 import LoadingView from '../components/LoadingView';
 import { getFormattedDate } from '../util';
 
@@ -54,6 +54,16 @@ export default function CardsTable() {
       },
     },
     {
+      name: 'lote',
+      label: 'Lote',
+      options: {
+        filter: true,
+        filterType: 'textField',
+        customFilterListOptions: { render: (v) => `Lote: ${v}` },
+        sort: true,
+      },
+    },
+    {
       name: 'date',
       label: 'Creado',
       options: {
@@ -72,13 +82,14 @@ export default function CardsTable() {
 
   const options = {
     filterType: 'dropdown',
-    selectableRows: 'single',
+    // selectableRows: 'single',
+    selectableRows: 'multiple',
     fixedSelectColumn: false,
     print: false,
     download: false,
     onRowsDelete: (rowsDeleted) => {
-      const itemIdsToDelete = rowsDeleted.data.map((i) => tableData[i.dataIndex].userId);
-      return Promise.all(itemIdsToDelete.map((id) => deleteUser(id)));
+      const itemIdsToDelete = rowsDeleted.data.map((i) => tableData[i.dataIndex]);
+      return Promise.all(itemIdsToDelete.map((card) => deleteCard(card.PK, card.categoryId)));
     },
   };
 

@@ -175,6 +175,7 @@ export class AppServices extends Construct {
     );
 
     props.categoriesTable.grantReadWriteData(this.publicService);
+    props.cardsTable.grantReadWriteData(this.publicService);
     this.publicService.addEnvironment(
       "ASSET_BUCKET",
       props.assetBucket.bucketName
