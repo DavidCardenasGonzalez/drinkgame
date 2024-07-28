@@ -1,10 +1,5 @@
-import path from "path";
 import {
-  enforceGroupMembership,
   createRouter,
-  validatePathVariables,
-  parseMultipartFormData,
-  validateBodyJSONVariables,
   RouterType,
   Matcher,
 } from "lambda-micro";
@@ -43,21 +38,33 @@ const getAllCategories = async (request, response) => {
       "#category_status": "status",
     },
   };
-  console.log(params);
-  const results = await dynamoDB.scan(params).promise();
-  const mappedCategories = await Promise.all(
-    results.Items.map(async (category) => {
-      if (category.avatar) {
-        category.avatarURL = await getSignedURL(category.avatar);
-      }
-      if (category.background) {
-        category.backgroundURL = await getSignedURL(category.background);
-      }
-      return category;
-    })
-  );
-  return response.output(mappedCategories, 200);
+
+  try {
+    const results = await dynamoDB.scan(params).promise();
+
+    const mappedCategories = await Promise.all(
+      results.Items.map(async (category) => {
+        const updates = [];
+        
+        if (category.avatar) {
+          updates.push(getSignedURL(category.avatar).then(url => category.avatarURL = url));
+        }
+        if (category.background) {
+          updates.push(getSignedURL(category.background).then(url => category.backgroundURL = url));
+        }
+        
+        await Promise.all(updates);
+        return category;
+      })
+    );
+
+    return response.output(mappedCategories, 200);
+  } catch (error) {
+    console.error("Error retrieving categories:", error);
+    return response.output({ error: "Error retrieving categories" }, 500);
+  }
 };
+
 
 const generateCategoryGame = async (request, response) => {
   const { categoriesIds, members } = JSON.parse(request.event.body);

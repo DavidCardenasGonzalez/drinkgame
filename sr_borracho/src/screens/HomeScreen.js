@@ -9,11 +9,13 @@ import {
   TouchableOpacity,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAllCategories } from "../../src/services";
 
 function HomeScreen({ navigation }) {
   const [showLastGame, setShowLastGame] = useState(false);
 
   useEffect(() => {
+    getAllCategories();
     async function fetchData() {
       const lastGame = await AsyncStorage.getItem("lastGame");
       console.log("lastGame", lastGame);

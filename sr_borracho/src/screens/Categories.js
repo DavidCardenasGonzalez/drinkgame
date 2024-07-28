@@ -9,6 +9,7 @@ import {
   ImageBackground,
 } from "react-native";
 import { getAllCategories } from "../../src/services";
+import { Ionicons } from "@expo/vector-icons";
 
 const CategoryList = ({ route, navigation }) => {
   const [categoryList, setCategoryList] = useState([]);
@@ -16,9 +17,7 @@ const CategoryList = ({ route, navigation }) => {
 
   useEffect(() => {
     getAllCategories().then(function (res) {
-      setCategoryList(
-        res.sort((a, b) => a.order - b.order)
-      );
+      setCategoryList(res.sort((a, b) => a.order - b.order));
     });
   }, [route.params.playerList]);
 
@@ -38,30 +37,26 @@ const CategoryList = ({ route, navigation }) => {
     const isSelected = selectedCategories[item.name];
     return (
       <TouchableOpacity
-        style={[
-          styles.category,
-          isSelected && styles.categorySelected
-        ]}
+        style={[styles.category, isSelected && styles.categorySelected]}
         onPress={() => handleCategoryPress(item)}
       >
         <View style={styles.categoryImageContainer}>
-          {/* {item.isPremium && (
-            <View style={styles.lockIconContainer}>
-              <Image
-                source={require("../../assets/lock.png")}
-                style={styles.lockIcon}
-              />
-            </View>
-          )} */}
           <Image
             source={{ uri: item.avatarURL }}
             style={[
               styles.categoryImage,
-              item.isPremium && styles.categoryImageLock
+              item.isPremium && styles.categoryImageLock,
             ]}
           />
         </View>
-        <Text style={styles.categoryName}>{item.name}</Text>
+        <Text
+          style={[
+            styles.categoryName,
+            isSelected && styles.categoryNameSelected,
+          ]}
+        >
+          {item.name}
+        </Text>
       </TouchableOpacity>
     );
   };
@@ -73,15 +68,19 @@ const CategoryList = ({ route, navigation }) => {
       imageStyle={{ opacity: 0.5 }}
     >
       <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.navigate("Players")}>
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
         <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
-        {
-          Object.keys(selectedCategories).length === 0 ? (
-            <Text style={styles.title}>Selecciona al menos una categoría</Text>
-          ) : (
-            <Text style={styles.title}>{Object.keys(selectedCategories).length} categorías seleccionadas</Text>
-          )
-          
-        }
+        {Object.keys(selectedCategories).length === 0 ? (
+          <Text style={styles.title}>Selecciona tus categorías</Text>
+        ) : (
+          <Text style={styles.title}>
+            {Object.keys(selectedCategories).length} categorías seleccionadas
+          </Text>
+        )}
         <FlatList
           data={categoryList}
           renderItem={renderCategory}
@@ -91,7 +90,11 @@ const CategoryList = ({ route, navigation }) => {
           contentContainerStyle={styles.contentContainer}
         />
         <TouchableOpacity
-          style={styles.button}
+          style={[
+            styles.button,
+            Object.keys(selectedCategories).length === 0 &&
+              styles.buttonDisabled,
+          ]}
           onPress={() => {
             navigation.navigate("Game", {
               playerList: route.params.playerList,
@@ -118,6 +121,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+  },
+  header: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "flex-start",
+    position: "absolute",
+    top: 40,
+    left: 20,
   },
   logo: {
     width: 250,
@@ -155,15 +166,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#ccb5af",
     borderColor: "#a8553b",
   },
+  categoryNameSelected: {
+    color: "#a8553b",
+  },
   categoryImageContainer: {
     position: "relative",
-    width: '100%',
+    width: "100%",
     minWidth: 150,
     height: 100,
   },
   categoryImage: {
-    height: '140px',
-    marginTop: '-30px',
+    height: 140,
+    marginTop: -30,
   },
   categoryImageLock: {
     // opacity: 0.5,

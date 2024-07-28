@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,15 +10,22 @@ import {
   Image,
   useWindowDimensions,
 } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons'; // Asegúrate de tener @expo/vector-icons instalado
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 const PlayerList = ({ navigation }) => {
-  const [playerList, setPlayerList] = useState([
-    { name: "Octavio" },
-    { name: "Rafael" },
-  ]);
+  const [playerList, setPlayerList] = useState([]);
   const [playerName, setPlayerName] = useState("");
   const { height } = useWindowDimensions();
+
+  useEffect(() => {
+    AsyncStorage.getItem("playerList").then(function (res) {
+      if (!res) {
+        return;
+      }
+      setPlayerList(JSON.parse(res));
+    });
+  }, []);
 
   const addPlayer = () => {
     if (!playerName) {
@@ -42,9 +49,17 @@ const PlayerList = ({ navigation }) => {
       imageStyle={{ opacity: 0.5 }}
     >
       <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+            <Ionicons name="arrow-back" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
         <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
         {height >= 800 && (
-          <Image source={require("../../assets/octavio.png")} style={styles.person} />
+          <Image
+            source={require("../../assets/octavio.png")}
+            style={styles.person}
+          />
         )}
         <ImageBackground
           source={require("../../assets/wall.jpg")}
@@ -76,12 +91,14 @@ const PlayerList = ({ navigation }) => {
           />
         </ImageBackground>
         <TouchableOpacity
-          // style={styles.button}
-          style={[styles.button, playerList.length < 1 && styles.buttonDisabled]}
+          style={[
+            styles.button,
+            playerList.length < 1 && styles.buttonDisabled,
+          ]}
           disabled={playerList.length < 1}
           onPress={() => {
-            navigation.navigate('Categories', {
-              playerList
+            navigation.navigate("Categories", {
+              playerList,
             });
           }}
         >
@@ -104,10 +121,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
+  header: {
+    flexDirection: "row",
+    width: "100%",
+    justifyContent: "flex-start",
+    position: "absolute",
+    top: 40,
+    left: 20,
+  },
   logo: {
     width: 250,
     height: 65,
-    // marginBottom: 20,
   },
   person: {
     width: 230,
@@ -123,10 +147,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 10,
     borderColor: "#4d4d4d",
-    // shadowColor: "#888888",
-    // shadowOffset: { width: 10, height: 10 },
-    // shadowOpacity: 1,
-    // shadowRadius: 5,
   },
   formBackground: {
     borderRadius: 10,
@@ -143,7 +163,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     padding: 15,
     borderRadius: 10,
-    // marginBottom: 20,
     fontSize: 18,
     width: "100%",
   },
@@ -152,13 +171,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    minWidth: 100,
-    // marginBottom: 10,
   },
   playerName: {
     color: "#FFF",
     fontSize: 18,
-    fontFamily: "ChalkboardSE-Regular", // Necesitarás una fuente de tiza instalada
   },
   deleteIcon: {
     padding: 10,
@@ -169,7 +185,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignItems: "center",
     width: "80%",
-    // marginTop: 20,
     borderWidth: 3,
     borderColor: "#FFF",
   },

@@ -11,6 +11,7 @@ import {
 import { generateGame } from "../../src/services";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
+import Timer from "../components/Timer"; // Import the Timer component
 
 const Game = ({ route, navigation }) => {
   const [cards, setCards] = useState([]);
@@ -19,9 +20,10 @@ const Game = ({ route, navigation }) => {
   const [backgroundDictionary, setBackgroundDictionary] = useState({});
   const [currentCard, setCurrentCard] = useState(0);
   const [endGame, setEndGame] = useState(false);
-
+  
   useEffect(() => {
-    console.log(route.params);
+    console.log('entro')
+    console.log(route.params)
     if (route.params && route.params.selectedCategories) {
       setCategories(route.params.selectedCategories);
       const dictionary = route.params.selectedCategories.reduce(
@@ -32,6 +34,7 @@ const Game = ({ route, navigation }) => {
         {}
       );
       setBackgroundDictionary(dictionary);
+      prefetchBackgroundImages(dictionary);
       setPlayerList(route.params.playerList);
       generateGame({
         members: route.params.playerList,
@@ -40,10 +43,13 @@ const Game = ({ route, navigation }) => {
         ),
       }).then(async function (res) {
         setCards(res);
-        await AsyncStorage.setItem("playerList", JSON.stringify(route.params.playerList));
+        await AsyncStorage.setItem(
+          "playerList",
+          JSON.stringify(route.params.playerList)
+        );
         await AsyncStorage.setItem("lastGame", JSON.stringify(res));
         await AsyncStorage.setItem(
-          "categories",
+          "selectedCategories",
           JSON.stringify(route.params.selectedCategories)
         );
       });
@@ -54,19 +60,29 @@ const Game = ({ route, navigation }) => {
       AsyncStorage.getItem("lastGame").then(function (res) {
         setCards(JSON.parse(res));
       });
-      AsyncStorage.getItem("categories").then(function (res) {
-        setCategories(JSON.parse(res));
-        const dictionary = JSON.parse(res).reduce((acc, category) => {
+      AsyncStorage.getItem("selectedCategories").then(function (res) {
+        const categoriesData = JSON.parse(res);
+        setCategories(categoriesData);
+        const dictionary = categoriesData.reduce((acc, category) => {
           acc[category.PK] = category.backgroundURL;
           return acc;
         }, {});
         setBackgroundDictionary(dictionary);
+        prefetchBackgroundImages(dictionary);
       });
       AsyncStorage.getItem("currentCard").then(function (res) {
         setCurrentCard(JSON.parse(res - 1));
       });
     }
-  }, []);
+  }, [route.params]);
+
+  const prefetchBackgroundImages = (dictionary) => {
+    console.log(dictionary)
+    Object.values(dictionary).forEach((url) => {
+    console.log(dictionary)
+      Image.prefetch(url);
+    });
+  };
 
   const handleNextCard = async () => {
     if (currentCard < cards.length - 1) {
@@ -86,7 +102,7 @@ const Game = ({ route, navigation }) => {
         uri:
           cards.length > 0 && backgroundDictionary
             ? backgroundDictionary[cards[currentCard].categoryId]
-            : require("../../assets/background.jpg"),
+            : "../../assets/background.jpg",
       }}
       style={styles.container}
     >
@@ -104,15 +120,16 @@ const Game = ({ route, navigation }) => {
           <Ionicons name="information-circle" size={24} color="white" />
         )}
       </View>
-      <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
 
       <TouchableOpacity style={styles.overlay} onPress={handleNextCard}>
+        <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
+
         <View style={styles.contentContainer}>
           {cards[currentCard]?.type === "virus" && (
-          <Image
-            source={require("../../assets/new-rule.png")}
-            style={styles.newRule}
-          />
+            <Image
+              source={require("../../assets/new-rule.png")}
+              style={styles.newRule}
+            />
           )}
           {cards[currentCard] && !endGame && (
             <>
@@ -123,6 +140,12 @@ const Game = ({ route, navigation }) => {
                 <Image
                   style={{ width: "90%", height: 500, margin: 25 }}
                   source={{ uri: cards[currentCard].imageURL }}
+                />
+              )}
+              {cards[currentCard].timeout && (
+                <Timer
+                  timeout={cards[currentCard].timeout}
+                  cardId={cards[currentCard].displayText}
                 />
               )}
             </>
@@ -175,7 +198,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     width: "90%",
-    marginTop: "-65px",
+    // marginTop: "-65px",
   },
   cardText: {
     fontSize: 35,
@@ -192,7 +215,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 250,
     height: 65,
-    marginBottom: 20,
+    marginBottom: 80,
   },
   newRule: {
     width: 300,
