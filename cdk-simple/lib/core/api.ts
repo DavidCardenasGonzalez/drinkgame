@@ -54,6 +54,7 @@ export class ApplicationAPI extends Construct {
           "http://localhost:3000",
           "https://*",
           "http://localhost:19006",
+          "http://localhost:8081",
         ],
         allowCredentials: true,
         maxAge: Duration.days(10),
