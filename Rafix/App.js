@@ -5,6 +5,7 @@ import HomeScreen from "./src/screens/HomeScreen";
 import Players from "./src/screens/Players";
 import Categories from "./src/screens/Categories";
 import Game from "./src/screens/Game";
+import Info from "./src/screens/Info";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,11 @@ function App() {
         <Stack.Screen
           name="Game"
           component={Game}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Info"
+          component={Info}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

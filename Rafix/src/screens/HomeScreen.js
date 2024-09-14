@@ -18,7 +18,6 @@ function HomeScreen({ navigation }) {
     getAllCategories();
     async function fetchData() {
       const lastGame = await AsyncStorage.getItem("lastGame");
-      console.log("lastGame", lastGame);
       if (lastGame) {
         setShowLastGame(true);
       }
@@ -51,8 +50,21 @@ function HomeScreen({ navigation }) {
         )}
         <Text style={styles.footerText}>
           Al hacer clic en "Nuevo juego" o "Continuar juego anterior", aceptas
-          <Text style={styles.link}> Términos de Servicio</Text> y
-          <Text style={styles.link}> Política de Privacidad</Text>
+          <Text
+            style={styles.link}
+            onPress={() => navigation.navigate("Info", { type: "terms" })}
+          >
+            {" "}
+            Términos de Servicio
+          </Text>{" "}
+          y
+          <Text
+            style={styles.link}
+            onPress={() => navigation.navigate("Info", { type: "privacy" })}
+          >
+            {" "}
+            Política de Privacidad
+          </Text>
         </Text>
         <TouchableOpacity
           onPress={() => {
@@ -107,6 +119,7 @@ const styles = StyleSheet.create({
   },
   link: {
     textDecorationLine: "underline",
+    color: "#FFF",
   },
   contactUs: {
     color: "#FFF",

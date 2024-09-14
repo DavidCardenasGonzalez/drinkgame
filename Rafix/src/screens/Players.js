@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     width: "100%",
     justifyContent: "flex-start",
     position: "absolute",
-    top: 40,
+    top: 50,
     left: 20,
   },
   logo: {
@@ -160,12 +160,11 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     borderRadius: 10,
-    justifyContent: "center",
+    // justifyContent: "center",
     alignItems: "center",
     borderWidth: 10,
     borderColor: "#4d4d4d",
     height: "55%",
-
     flex: 1,
   },
   formBackground: {
@@ -173,7 +172,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     // margin: 20,
-    minHeight: 300,
+    // minHeight: 300,
   },
   title: {
     fontSize: 24,

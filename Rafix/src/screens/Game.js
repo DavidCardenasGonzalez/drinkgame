@@ -7,21 +7,25 @@ import {
   ImageBackground,
   Image,
   Button,
+  Modal,
 } from "react-native";
-import { generateGame } from "../../src/services";
+import { generateGame } from "../services";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import Timer from "../components/Timer"; // Import the Timer component
-import Loading from "../components/Loading"; // Import the Loading component
+import Timer from "../components/Timer";
+import Loading from "../components/Loading";
+import cardsInfo from "../util/cardsInfo.json";
 
 const Game = ({ route, navigation }) => {
   const [cards, setCards] = useState([]);
   const [categories, setCategories] = useState([]);
   const [playerList, setPlayerList] = useState([]);
+  const [error, setError] = useState("");
   const [backgroundDictionary, setBackgroundDictionary] = useState({});
   const [currentCard, setCurrentCard] = useState(0);
   const [endGame, setEndGame] = useState(false);
-  const [loading, setLoading] = useState(true); // New state for loading
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -37,22 +41,29 @@ const Game = ({ route, navigation }) => {
         setBackgroundDictionary(dictionary);
         prefetchBackgroundImages(dictionary);
         setPlayerList(route.params.playerList);
-        const res = await generateGame({
+        generateGame({
           members: route.params.playerList,
           categoriesIds: route.params.selectedCategories.map(
             (category) => category.PK
           ),
-        });
-        setCards(res);
-        await AsyncStorage.setItem(
-          "playerList",
-          JSON.stringify(route.params.playerList)
-        );
-        await AsyncStorage.setItem("lastGame", JSON.stringify(res));
-        await AsyncStorage.setItem(
-          "selectedCategories",
-          JSON.stringify(route.params.selectedCategories)
-        );
+        })
+          .then(async (res) => {
+            console.log(res);
+            setCards(res);
+            await AsyncStorage.setItem(
+              "playerList",
+              JSON.stringify(route.params.playerList)
+            );
+            await AsyncStorage.setItem("lastGame", JSON.stringify(res));
+            await AsyncStorage.setItem(
+              "selectedCategories",
+              JSON.stringify(route.params.selectedCategories)
+            );
+          })
+          .catch((error) => {
+            setError("Error al generar el juego");
+            console.error("Error fetching game:", error);
+          });
       } else {
         const playerListRes = await AsyncStorage.getItem("playerList");
         const lastGameRes = await AsyncStorage.getItem("lastGame");
@@ -78,9 +89,7 @@ const Game = ({ route, navigation }) => {
   }, [route.params]);
 
   const prefetchBackgroundImages = (dictionary) => {
-    console.log(dictionary);
     Object.values(dictionary).forEach((url) => {
-      console.log(dictionary);
       Image.prefetch(url);
     });
   };
@@ -100,9 +109,19 @@ const Game = ({ route, navigation }) => {
     }
   };
 
-  // if (loading) {
-  //   return <Loading />; // Show loading component when loading
-  // }
+  const renderModalContent = () => {
+    const info = cardsInfo[cards[currentCard]?.info] || cards[currentCard]?.info || "No hay información disponible";
+    return (
+      <View style={styles.modalContent}>
+        <Text style={styles.modalText}>{info}</Text>
+        <Button
+          title="Cerrar"
+          onPress={() => setModalVisible(false)}
+          color="#FF6F61"
+        />
+      </View>
+    );
+  };
 
   return (
     <ImageBackground
@@ -126,13 +145,17 @@ const Game = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
         {cards[currentCard]?.info && (
-          <Ionicons name="information-circle" size={24} color="white" />
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Ionicons name="information-circle" size={24} color="white" />
+          </TouchableOpacity>
         )}
       </View>
 
       <TouchableOpacity style={styles.overlay} onPress={handleNextCard}>
         <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
-        {loading ? (
+        {error ? (
+          <Text style={styles.cardText}>{error}</Text>
+        ) : loading ? (
           <Loading />
         ) : (
           <View style={styles.contentContainer}>
@@ -181,6 +204,17 @@ const Game = ({ route, navigation }) => {
           </View>
         )}
       </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          {renderModalContent()}
+        </View>
+      </Modal>
     </ImageBackground>
   );
 };
@@ -234,6 +268,25 @@ const styles = StyleSheet.create({
   newRule: {
     width: 300,
     height: 65,
+    marginBottom: 20,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+  },
+  modalContent: {
+    backgroundColor: "black",
+    padding: 20,
+    borderRadius: 10,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalText: {
+    color: "white",
+    fontSize: 18,
+    textAlign: "center",
     marginBottom: 20,
   },
 });
