@@ -2,28 +2,46 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Button,
   Image,
   ImageBackground,
   StyleSheet,
   TouchableOpacity,
+  Linking,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAllCategories } from "../../src/services";
 
-function HomeScreen({ navigation }) {
+function HomeScreen({ route, navigation }) {
   const [showLastGame, setShowLastGame] = useState(false);
-
   useEffect(() => {
     getAllCategories();
     async function fetchData() {
       const lastGame = await AsyncStorage.getItem("lastGame");
+      console.log(lastGame);
       if (lastGame) {
         setShowLastGame(true);
+      } else {
+        setShowLastGame(false);
       }
     }
     fetchData();
-  }, []);
+    console.log("HomeScreen mounted");
+  }, [route.params]);
+
+  const openInstagram = () => {
+    const instagramUrl = 'https://www.instagram.com/rafix.app';
+  
+    Linking.canOpenURL(instagramUrl)
+      .then((supported) => {
+        if (supported) {
+          Linking.openURL(instagramUrl);
+        } else {
+          Alert.alert('Error', 'No se pudo abrir Instagram.');
+        }
+      })
+      .catch((err) => console.error('Error al intentar abrir Instagram:', err));
+  };
 
   return (
     <ImageBackground
@@ -33,7 +51,10 @@ function HomeScreen({ navigation }) {
     >
       <View style={styles.container}>
         <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
-        <Image source={require("../../assets/octavio.png")} style={styles.person} />
+        <Image
+          source={require("../../assets/octavio.png")}
+          style={styles.person}
+        />
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate("Players")}
@@ -66,11 +87,7 @@ function HomeScreen({ navigation }) {
             Política de Privacidad
           </Text>
         </Text>
-        <TouchableOpacity
-          onPress={() => {
-            /* Handle contact us */
-          }}
-        >
+        <TouchableOpacity onPress={openInstagram}>
           <Text style={styles.contactUs}>Contáctanos</Text>
         </TouchableOpacity>
       </View>

@@ -59,5 +59,5 @@ async function borrarRegistrosEnLote(categoryId, lote) {
 
 // Llamar a la función para iniciar el proceso de borrado en lote
 const categoryId = "2Vn2i0MRjn8FO51UZcGF0WXYLXx"; // categoryId que ya está hardcodeado
-const lote = "2"; // Número de lote a borrar
+const lote = "42"; // Número de lote a borrar
 borrarRegistrosEnLote(categoryId, lote);

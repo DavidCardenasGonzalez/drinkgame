@@ -4,7 +4,7 @@
   "private": true,
   "main": "build/index.js",
   "dependencies": {
-    "@aws-amplify/ui-components": "^1.9.40",
+    "@aws-amplify/ui-components": "^0.10.4",
     "@aws-amplify/ui-react": "^4.0.3",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
@@ -30,7 +30,7 @@
     "react-file-icon": "^1.0.0",
     "react-helmet-async": "^1.0.7",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.2",
+    "react-scripts": "^5.0.1",
     "react-transition-group": "^4.4.1",
     "web-vitals": "^1.0.1"
   },
@@ -42,8 +42,6 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest",
       "eslint-config-airbnb"
     ],
     "rules": {

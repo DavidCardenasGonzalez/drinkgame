@@ -12,14 +12,27 @@ import {
 } from "react-native";
 import { getAllCategories } from "../../src/services";
 import { Ionicons } from "@expo/vector-icons";
+import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 const { width } = Dimensions.get("window");
 
 const CategoryList = ({ route, navigation }) => {
   const [categoryList, setCategoryList] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState({});
+  const [isDrinkingFilterActive, setDrinkingFilterActive] = useState(false);
+  const [isTalkingFilterActive, setTalkingFilterActive] = useState(false);
+
+  const showPaywall = async () => {
+    try {
+      await RevenueCatUI.presentPaywall();
+    } catch (error) {
+      console.log("Error mostrando el paywall:", error);
+    }
+  };
+
   useEffect(() => {
     getAllCategories().then(function (res) {
+      console.log(res);
       setCategoryList(res.sort((a, b) => a.order - b.order));
     });
   }, [route.params.playerList]);
@@ -34,6 +47,23 @@ const CategoryList = ({ route, navigation }) => {
       }
       return newSelectedCategories;
     });
+  };
+
+  // Filtro de categorías
+  const filteredCategoryList = categoryList.filter((category) => {
+    if (!isDrinkingFilterActive && !isTalkingFilterActive) return true;
+    if (isDrinkingFilterActive && isTalkingFilterActive) return true;
+    if (isDrinkingFilterActive) return category.haveAlcohol;
+    if (isTalkingFilterActive) return !category.haveAlcohol;
+    return false;
+  });
+
+  const toggleDrinkingFilter = () => {
+    setDrinkingFilterActive((prevState) => !prevState);
+  };
+
+  const toggleTalkingFilter = () => {
+    setTalkingFilterActive((prevState) => !prevState);
   };
 
   const renderCategory = ({ item }) => {
@@ -76,11 +106,55 @@ const CategoryList = ({ route, navigation }) => {
             <TouchableOpacity onPress={() => navigation.navigate("Players")}>
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
+            <Image
+              source={require("../../assets/RAFIX.png")}
+              style={styles.logo}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                showPaywall();
+              }}
+            >
+              <Ionicons name="cart-outline" size={24} color="white" />
+            </TouchableOpacity>
           </View>
-          <Image
-            source={require("../../assets/RAFIX.png")}
-            style={styles.logo}
-          />
+          <View style={styles.filtersContainer}>
+            <TouchableOpacity
+              style={[
+                styles.filterButton,
+                isDrinkingFilterActive && styles.filterButtonSelected,
+              ]}
+              onPress={toggleDrinkingFilter}
+            >
+              <Ionicons name="beer-outline" size={24} color="white" />
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  isDrinkingFilterActive && styles.filterButtonTextSelected,
+                ]}
+              >
+                Beber
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.filterButton,
+                isTalkingFilterActive && styles.filterButtonSelected,
+              ]}
+              onPress={toggleTalkingFilter}
+            >
+              <Ionicons name="happy-outline" size={24} color="white" />
+              <Text
+                style={[
+                  styles.filterButtonText,
+                  isTalkingFilterActive && styles.filterButtonTextSelected,
+                ]}
+              >
+                Platicadito
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <FlatList
             ListHeaderComponent={() => (
               <View>
@@ -94,31 +168,29 @@ const CategoryList = ({ route, navigation }) => {
                 )}
               </View>
             )}
-            data={categoryList}
+            data={filteredCategoryList}
             renderItem={renderCategory}
             keyExtractor={(item) => item.name}
             numColumns={2}
             columnWrapperStyle={styles.row}
             contentContainerStyle={styles.contentContainer}
-            ListFooterComponent={() => (
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  Object.keys(selectedCategories).length === 0 &&
-                    styles.buttonDisabled,
-                ]}
-                onPress={() => {
-                  navigation.navigate("Game", {
-                    playerList: route.params.playerList,
-                    selectedCategories: Object.values(selectedCategories),
-                  });
-                }}
-                disabled={Object.keys(selectedCategories).length === 0}
-              >
-                <Text style={styles.buttonText}>JUGAR</Text>
-              </TouchableOpacity>
-            )}
           />
+          <TouchableOpacity
+            style={[
+              styles.button,
+              Object.keys(selectedCategories).length === 0 &&
+                styles.buttonDisabled,
+            ]}
+            onPress={() => {
+              navigation.navigate("Game", {
+                playerList: route.params.playerList,
+                selectedCategories: Object.values(selectedCategories),
+              });
+            }}
+            disabled={Object.keys(selectedCategories).length === 0}
+          >
+            <Text style={styles.buttonText}>JUGAR</Text>
+          </TouchableOpacity>
         </View>
       </ImageBackground>
     </SafeAreaView>
@@ -148,16 +220,16 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     width: "100%",
-    justifyContent: "flex-start",
-    marginBottom: 10,
+    justifyContent: "space-between",
+    marginBottom: 0,
   },
   logo: {
-    width: 250,
-    height: 65,
-    marginBottom: 20,
+    width: 150,
+    height: 35,
+    marginBottom: 10,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#FFF",
     marginBottom: 20,
@@ -166,17 +238,13 @@ const styles = StyleSheet.create({
   categoriesContainer: {
     width: "100%",
   },
-  contentContainer: {
-    // paddingHorizontal: 10,
-    // backgroundColor: 'red',
-  },
+  contentContainer: {},
   row: {
     flex: 1,
     justifyContent: "space-between",
     marginBottom: 25,
   },
   category: {
-    // flex: 1,
     backgroundColor: "#3b3939",
     borderRadius: 15,
     padding: 0,
@@ -185,8 +253,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderColor: "#2b2626",
     borderWidth: 5,
-    // width: '45%',
-    // height: 100,
   },
   categorySelected: {
     backgroundColor: "#ccb5af",
@@ -197,28 +263,13 @@ const styles = StyleSheet.create({
   },
   categoryImageContainer: {
     width: "100%",
-    minWidth: width > 400 ? 150: 140,
+    minWidth: width > 400 ? 150 : 140,
   },
   categoryImage: {
     height: 140,
     marginTop: -30,
   },
-  categoryImageLock: {
-    // opacity: 0.5,
-  },
-  lockIconContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  lockIcon: {
-    width: 40,
-    height: 40,
-  },
+  categoryImageLock: {},
   categoryName: {
     fontSize: 16,
     fontWeight: "bold",
@@ -245,6 +296,36 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
+  },
+  // Estilos para los filtros
+  filtersContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    marginBottom: 20,
+  },
+  filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#3b3939",
+    padding: 10,
+    borderRadius: 20,
+    width: "45%",
+    borderColor: "#2b2626",
+    borderWidth: 2,
+  },
+  filterButtonSelected: {
+    backgroundColor: "#ccb5af",
+    borderColor: "#a8553b",
+  },
+  filterButtonText: {
+    color: "#FFF",
+    fontSize: 16,
+    marginLeft: 10,
+  },
+  filterButtonTextSelected: {
+    color: "#a8553b",
   },
 });
 

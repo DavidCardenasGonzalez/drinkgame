@@ -2,7 +2,7 @@
   "expo": {
     "name": "Rafix",
     "slug": "Rafix",
-    "version": "1.0.4",
+    "version": "1.1.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -11,9 +11,27 @@
       "resizeMode": "contain",
       "backgroundColor": "#803cff"
     },
+    "plugins": [
+      [
+        "expo-dev-launcher",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "enableProguardInReleaseBuilds": true
+          }
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.cardi7.Rafix"
+      "bundleIdentifier": "com.cardi7.Rafix",
+      "buildNumber": "1.1.1"
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +39,7 @@
         "backgroundColor": "#803cff"
       },
       "package": "com.cardi7.Rafix",
-      "versionCode": 1
+      "versionCode": 3
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -19,9 +19,11 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
+import Autocomplete from '@mui/material/Autocomplete';
 import Page from '../containers/Page';
 import { createCard, getCard, updateCardProfile } from '../services';
-// import { useUser } from '../UserContext';
+
+const infoOptions = ['quePrefieresPulgares', 'encuestaDeDedos', 'passcode'];
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -68,6 +70,10 @@ function CardCreate() {
   // response
   const [text2, setText2] = useState('');
   const [duration, setDuration] = useState(1);
+  const [timeout, setTimeout] = useState(0);
+  const [passcode, setPasscode] = useState('');
+  const [secondaryText, setSecondaryText] = useState('');
+  const [info, setInfo] = useState('');
   const [status, setStatus] = useState('active');
 
   const [originalCard, setOrignalCard] = useState({});
@@ -110,12 +116,27 @@ function CardCreate() {
       return;
     }
 
+    if (type === 'timeout' && !timeout) {
+      setIsValid(false);
+      return;
+    }
+
+    if (type === 'passcode' && !passcode) {
+      setIsValid(false);
+      return;
+    }
+
+    if (type === 'roulette' && !secondaryText) {
+      setIsValid(false);
+      return;
+    }
+
     if (!status || status.length < 3) {
       setIsValid(false);
       return;
     }
     setIsValid(true);
-  }, [text, categoryId, type, text2, duration, status]);
+  }, [text, categoryId, type, text2, duration, status, timeout, passcode, secondaryText]);
 
   useEffect(() => {
     (async () => {
@@ -130,7 +151,11 @@ function CardCreate() {
       // setCategoryId(data.categoryId);
       setText2(data.text2);
       setDuration(data.duration);
+      setTimeout(data.timeout);
       setStatus(data.status);
+      setInfo(data.info);
+      setPasscode(data.passcode);
+      setSecondaryText(data.secondaryText);
       if (data.image1URL) {
         setImage1URL(data.image1URL);
       }
@@ -150,7 +175,11 @@ function CardCreate() {
         categoryId,
         text2,
         duration,
+        timeout,
+        passcode,
+        secondaryText,
         status,
+        info,
       });
     } catch (err) {
       setSubmitting(false);
@@ -320,6 +349,9 @@ function CardCreate() {
                       <MenuItem value="text">Texto</MenuItem>
                       <MenuItem value="question">Question</MenuItem>
                       <MenuItem value="virus">Virus</MenuItem>
+                      <MenuItem value="timeout">Contra reloj</MenuItem>
+                      <MenuItem value="passcode">Palabra clave</MenuItem>
+                      <MenuItem value="roulette">Ruleta</MenuItem>
                     </Select>
                   </FormControl>
                   <TextField
@@ -360,6 +392,62 @@ function CardCreate() {
                       fullWidth
                     />
                   )}
+                  {type === 'timeout' && (
+                    <TextField
+                      id="timeout"
+                      type="number"
+                      className={classes.input}
+                      label="Duracion en segundos"
+                      value={timeout}
+                      onChange={(e) => setTimeout(e.target.value)}
+                      required={type === 'timeout'}
+                      disabled={submitting}
+                      fullWidth
+                    />
+                  )}
+
+                  {type === 'passcode' && (
+                    <TextField
+                      id="passcode"
+                      className={classes.input}
+                      label="Palabra clave"
+                      value={passcode}
+                      onChange={(e) => setPasscode(e.target.value)}
+                      required={type === 'passcode'}
+                      disabled={submitting}
+                      fullWidth
+                    />
+                  )}
+
+                  {type === 'roulette' && (
+                    <TextField
+                      id="secondaryText"
+                      className={classes.input}
+                      label="Texto secundario"
+                      value={secondaryText}
+                      onChange={(e) => setSecondaryText(e.target.value)}
+                      required={type === 'roulette'}
+                      disabled={submitting}
+                      fullWidth
+                    />
+                  )}
+
+                  <Autocomplete
+                    className={classes.input}
+                    freeSolo
+                    options={infoOptions}
+                    value={info}
+                    onChange={(e, newValue) => setInfo(newValue)}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Información adicional"
+                        onChange={(e) => setInfo(e.target.value)}
+                        fullWidth
+                      />
+                    )}
+                  />
+
                   <FormControl fullWidth>
                     <InputLabel id="status-label">Estado</InputLabel>
                     <Select

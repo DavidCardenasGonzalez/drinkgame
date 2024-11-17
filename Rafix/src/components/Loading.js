@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Image, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Image } from "react-native";
 
 const Loading = () => {
   return (
@@ -8,14 +8,13 @@ const Loading = () => {
         source={require("../../assets/loading.gif")}
         style={styles.image}
       />
-      {/* <ActivityIndicator size="500" color="#00ff00" style={styles.loader} /> */}
       </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     justifyContent: "center",
     alignItems: "center",
     maxHeight: 200,

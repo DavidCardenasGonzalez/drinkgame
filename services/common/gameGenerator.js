@@ -38,6 +38,7 @@ export const generateGame = (cardsArray, members) => {
     if (card.type === "question" || card.type === "virus") {
       const secondCard = {
         ...card,
+        type: card.type === "virus" ? "virusEnd" : card.type,
         text: card.text2,
         displayText: alternativeCardDisplayText,
         image1: card.image2,

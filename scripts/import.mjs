@@ -25,22 +25,24 @@ async function modificarRegistros() {
 
     // Iterar sobre cada registro y modificar la tabla
     for (const registro of registros) {
-      // Reemplazar "{men}" por "{{men}}"
-      // const array = registro.split(" ::respuesta:: ");
+      // const array = registro.split(" /respuesta/ ");
       // console.log(array);
       const registroEjemplo = {
         PK: KSUID.randomSync().string,
-        categoryId: "2Vn2i0MRjn8FO51UZcGF0WXYLXx",
+        categoryId: "2VrJbLSDL1mJ6AESPoxxoGHZysi",
         date: new Date().toISOString(),
         // duration: 2,
         status: "active",
         text: registro,
         text2: "",
         // text: array[0],
-        // text2: array[1],
-        type: "text",
-        lote: "38",
+        // passcode: array[1],
+        type: "timeout",
+        timeout: 60,
+        lote: "46",
+        // info: "passcode",
       };
+      
       console.log(registroEjemplo);
       await insertarRegistro(registroEjemplo);
     }

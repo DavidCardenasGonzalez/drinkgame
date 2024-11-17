@@ -41,7 +41,11 @@ const Timer = ({ timeout, cardId }) => {
 
   return (
     <View style={styles.timerContainer}>
-      <Text style={styles.timerText}>{formatTime(timeLeft)}</Text>
+      <Text
+        style={{ ...styles.timerText, color: timeLeft == 0 ? "#cf4b54" : "#f4b92b" }}
+      >
+        {formatTime(timeLeft)}
+      </Text>
       <View style={styles.buttonContainer}>
         {timeLeft > 0 ? (
           <TouchableOpacity

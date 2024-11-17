@@ -9,6 +9,9 @@ import {
   ImageBackground,
   Image,
   useWindowDimensions,
+  KeyboardAvoidingView,
+  SafeAreaView,
+  Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
@@ -31,7 +34,7 @@ const PlayerList = ({ navigation }) => {
     if (!playerName) {
       return;
     }
-    const player = { name: playerName };
+    const player = { name: playerName.trim() };
     setPlayerList([...playerList, player]);
     setPlayerName("");
   };
@@ -42,85 +45,108 @@ const PlayerList = ({ navigation }) => {
     setPlayerList(players);
   };
 
+  const confirmDeleteAllPlayers = () => {
+    console.log(playerList);
+    setPlayerList([]);
+  };
+
   return (
-    <ImageBackground
-      source={require("../../assets/background.jpg")}
-      style={styles.background}
-      imageStyle={styles.image}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"} // iOS mueve la pantalla
     >
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-        <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
-        {height >= 800 && (
-          <Image
-            source={require("../../assets/octavio.png")}
-            style={styles.person}
-          />
-        )}
-        <View style={styles.formWrapper}>
-          <ImageBackground
-            source={require("../../assets/wall.jpg")}
-            style={styles.formContainer}
-            imageStyle={styles.formBackground}
-          >
-            <View style={{ padding: 20 }}>
-              <Text style={styles.title}>Agrega a los jugadores</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Agregar jugador"
-                  value={playerName}
-                  onChangeText={(value) => setPlayerName(value)}
-                  onSubmitEditing={addPlayer}
-                  autoFocus
-                  returnKeyType="done"
-                />
-                <TouchableOpacity style={styles.addButton} onPress={addPlayer}>
-                  <Ionicons name="add" size={24} color="white" />
-                </TouchableOpacity>
-              </View>
-              <FlatList
-                data={playerList}
-                renderItem={({ item, index }) => (
-                  <View style={styles.player}>
-                    <Text style={styles.playerName}>{item.name}</Text>
+    <SafeAreaView style={styles.safeArea}>
+    <ImageBackground
+          source={require("../../assets/background.jpg")}
+          style={styles.background}
+          imageStyle={styles.image}
+        >
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+                <Ionicons name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
+              {height > 800 && (
+              <Image
+                source={require("../../assets/RAFIX.png")}
+                style={styles.logo}
+              />
+            )}
+              <TouchableOpacity onPress={confirmDeleteAllPlayers}>
+                <MaterialIcons name="delete" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formWrapper}>
+              <ImageBackground
+                source={require("../../assets/wall.jpg")}
+                style={styles.formContainer}
+                imageStyle={styles.formBackground}
+              >
+                <View style={{ padding: 20 }}>
+                  {/* <Text style={styles.title}>Agrega a los jugadores</Text> */}
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Agrega a los jugadores"
+                      value={playerName}
+                      onChangeText={(value) => setPlayerName(value)}
+                      onSubmitEditing={addPlayer}
+                      autoFocus
+                      returnKeyType="done"
+                      placeholderTextColor={"#000"}
+                    />
                     <TouchableOpacity
-                      style={styles.deleteIcon}
-                      onPress={() => deletePlayer(index)}
+                      style={styles.addButton}
+                      onPress={addPlayer}
                     >
-                      <MaterialIcons name="close" size={22} color="white" />
+                      <Ionicons name="add" size={24} color="white" />
                     </TouchableOpacity>
                   </View>
-                )}
-                keyExtractor={(item, index) => index.toString()}
-              />
+                  <FlatList
+                    data={playerList}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.player}>
+                        <Text style={styles.playerName}>{item.name}</Text>
+                        <TouchableOpacity
+                          style={styles.deleteIcon}
+                          onPress={() => deletePlayer(index)}
+                        >
+                          <MaterialIcons name="close" size={22} color="white" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                    keyExtractor={(item, index) => index.toString()}
+                  />
+                </View>
+              </ImageBackground>
             </View>
-          </ImageBackground>
-        </View>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            playerList.length < 1 && styles.buttonDisabled,
-          ]}
-          disabled={playerList.length < 1}
-          onPress={() => {
-            navigation.navigate("Categories", {
-              playerList,
-            });
-          }}
-        >
-          <Text style={styles.buttonText}>JUGAR</Text>
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
+            <TouchableOpacity
+              style={[
+                styles.button,
+                playerList.length < 1 && styles.buttonDisabled,
+              ]}
+              disabled={playerList.length < 1}
+              onPress={() => {
+                navigation.navigate("Categories", {
+                  playerList,
+                });
+              }}
+            >
+              <Text style={styles.buttonText}>JUGAR</Text>
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "black",
+  },
   background: {
     flex: 1,
     resizeMode: "cover",
@@ -137,20 +163,13 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     width: "100%",
-    justifyContent: "flex-start",
-    position: "absolute",
-    top: 50,
-    left: 20,
+    justifyContent: "space-between",
+    marginBottom: 0,
   },
   logo: {
-    width: 250,
-    height: 65,
-    marginTop: 50,
-  },
-  person: {
-    width: 230,
-    height: 230,
-    marginBottom: -20,
+    width: 150,
+    height: 35,
+    marginBottom: 10,
   },
   formWrapper: {
     width: "100%",
@@ -160,7 +179,6 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     borderRadius: 10,
-    // justifyContent: "center",
     alignItems: "center",
     borderWidth: 10,
     borderColor: "#4d4d4d",
@@ -168,11 +186,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   formBackground: {
-    // borderRadius: 10,
     width: "100%",
     height: "100%",
-    // margin: 20,
-    // minHeight: 300,
   },
   title: {
     fontSize: 24,
@@ -205,7 +220,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-    marginVertical: 5,
+    marginVertical: 2,
   },
   playerName: {
     color: "#FFF",

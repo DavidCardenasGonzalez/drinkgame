@@ -44,6 +44,16 @@ export default function CardsTable() {
       },
     },
     {
+      name: 'image1',
+      label: 'Imagen',
+      options: {
+        filter: true,
+        filterType: 'textField',
+        customFilterListOptions: { render: (v) => `Lote: ${v}` },
+        sort: true,
+      },
+    },
+    {
       name: 'status',
       label: 'Estado',
       options: {
