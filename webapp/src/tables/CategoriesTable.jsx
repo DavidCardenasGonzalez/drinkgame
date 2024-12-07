@@ -58,9 +58,21 @@ export default function CategoriesTable() {
       label: 'Orden',
       options: {
         filter: false,
-        // filterType: 'textField',
-        // customFilterListOptions: { render: (v) => `Estado: ${v}` },
         sort: true,
+      },
+    },
+    {
+      name: 'isPremium',
+      label: 'Premium',
+      options: {
+        filter: false,
+        sort: true,
+        customBodyRenderLite: function UserViewCell(dataIndex) {
+          const val = tableData[dataIndex];
+          return (
+            val.isPremium ? 'Si' : 'No'
+          );
+        },
       },
     },
     {

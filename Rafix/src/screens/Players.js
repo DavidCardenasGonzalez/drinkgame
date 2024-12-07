@@ -20,7 +20,7 @@ const PlayerList = ({ navigation }) => {
   const [playerList, setPlayerList] = useState([]);
   const [playerName, setPlayerName] = useState("");
   const { height, width } = useWindowDimensions();
-
+  console.log(height, width);
   useEffect(() => {
     AsyncStorage.getItem("playerList").then(function (res) {
       if (!res) {
@@ -55,8 +55,8 @@ const PlayerList = ({ navigation }) => {
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"} // iOS mueve la pantalla
     >
-    <SafeAreaView style={styles.safeArea}>
-    <ImageBackground
+      <SafeAreaView style={styles.safeArea}>
+        <ImageBackground
           source={require("../../assets/background.jpg")}
           style={styles.background}
           imageStyle={styles.image}
@@ -66,12 +66,12 @@ const PlayerList = ({ navigation }) => {
               <TouchableOpacity onPress={() => navigation.navigate("Home")}>
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
-              {height > 800 && (
-              <Image
-                source={require("../../assets/RAFIX.png")}
-                style={styles.logo}
-              />
-            )}
+              {height > 600 && (
+                <Image
+                  source={require("../../assets/RAFIX.png")}
+                  style={styles.logo}
+                />
+              )}
               <TouchableOpacity onPress={confirmDeleteAllPlayers}>
                 <MaterialIcons name="delete" size={24} color="white" />
               </TouchableOpacity>
@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
+    paddingTop: 30,
   },
   header: {
     flexDirection: "row",

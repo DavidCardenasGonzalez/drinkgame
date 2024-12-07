@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { getAllCategories } from "../../src/services";
 import { Ionicons } from "@expo/vector-icons";
+import Purchases from "react-native-purchases";
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
 
 const { width } = Dimensions.get("window");
@@ -21,10 +22,27 @@ const CategoryList = ({ route, navigation }) => {
   const [selectedCategories, setSelectedCategories] = useState({});
   const [isDrinkingFilterActive, setDrinkingFilterActive] = useState(false);
   const [isTalkingFilterActive, setTalkingFilterActive] = useState(false);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
 
   const showPaywall = async () => {
     try {
-      await RevenueCatUI.presentPaywall();
+      const paywallResult = await RevenueCatUI.presentPaywall();
+      switch (paywallResult) {
+        case PAYWALL_RESULT.NOT_PRESENTED:
+        case PAYWALL_RESULT.ERROR:
+        case PAYWALL_RESULT.CANCELLED:
+          return false;
+        case PAYWALL_RESULT.PURCHASED: {
+          const customerInfo = await Purchases.getCustomerInfo();
+          setIsPremiumUser(!!customerInfo.entitlements.active["Pro"]);
+        }
+        case PAYWALL_RESULT.RESTORED: {
+          const customerInfo = await Purchases.getCustomerInfo();
+          setIsPremiumUser(!!customerInfo.entitlements.active["Pro"]);
+        }
+        default:
+          return false;
+      }
     } catch (error) {
       console.log("Error mostrando el paywall:", error);
     }
@@ -37,7 +55,31 @@ const CategoryList = ({ route, navigation }) => {
     });
   }, [route.params.playerList]);
 
-  const handleCategoryPress = (category) => {
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const customerInfo = await Purchases.getCustomerInfo();
+        console.log("customerInfoooo", customerInfo.entitlements.active);
+        setIsPremiumUser(!!customerInfo.entitlements.active["Pro"]);
+      } catch (e) {
+        console.log(
+          "error",
+          e.code,
+          e.message,
+          e.userCancelled,
+          e.backendCode,
+          e.details
+        );
+      }
+    }
+    fetchData();
+  }, []);
+
+  const handleCategoryPress = async (category) => {
+    // if (category.isPremium && !isPremiumUser) {
+    //   await showPaywall();
+    //   return;
+    // }
     setSelectedCategories((prevSelectedCategories) => {
       const newSelectedCategories = { ...prevSelectedCategories };
       if (newSelectedCategories[category.name]) {
@@ -49,7 +91,6 @@ const CategoryList = ({ route, navigation }) => {
     });
   };
 
-  // Filtro de categorías
   const filteredCategoryList = categoryList.filter((category) => {
     if (!isDrinkingFilterActive && !isTalkingFilterActive) return true;
     if (isDrinkingFilterActive && isTalkingFilterActive) return true;
@@ -73,14 +114,25 @@ const CategoryList = ({ route, navigation }) => {
         style={[styles.category, isSelected && styles.categorySelected]}
         onPress={() => handleCategoryPress(item)}
       >
-        <View style={styles.categoryImageContainer}>
+        <View
+          style={[
+            styles.categoryImageContainer,
+            // item.isPremium && !isPremiumUser && styles.categoryImageLock,
+          ]}
+        >
           <Image
             source={{ uri: item.avatarURL }}
             style={[
               styles.categoryImage,
-              item.isPremium && styles.categoryImageLock,
+              item.isPremium && !isPremiumUser && styles.categoryImageLock,
             ]}
           />
+          {item.isPremium && !isPremiumUser && (
+            <Image
+              source={require("../../assets/lock.png")}
+              style={styles.lockImage}
+            />
+          )}
         </View>
         <Text
           style={[
@@ -110,13 +162,7 @@ const CategoryList = ({ route, navigation }) => {
               source={require("../../assets/RAFIX.png")}
               style={styles.logo}
             />
-            <TouchableOpacity
-              onPress={() => {
-                showPaywall();
-              }}
-            >
-              <Ionicons name="cart-outline" size={24} color="white" />
-            </TouchableOpacity>
+            <TouchableOpacity></TouchableOpacity>
           </View>
           <View style={styles.filtersContainer}>
             <TouchableOpacity
@@ -215,6 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     padding: 20,
+    paddingTop: 30,
     paddingBottom: 0,
   },
   header: {
@@ -269,7 +316,16 @@ const styles = StyleSheet.create({
     height: 140,
     marginTop: -30,
   },
-  categoryImageLock: {},
+  categoryImageLock: {
+    opacity: 0.3,
+  },
+  lockImage: {
+    position: "absolute",
+    top: 60,
+    right: 5,
+    width: 50,
+    height: 50,
+  },
   categoryName: {
     fontSize: 16,
     fontWeight: "bold",

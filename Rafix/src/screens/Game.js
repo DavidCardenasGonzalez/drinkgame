@@ -187,7 +187,7 @@ const Game = ({ route, navigation }) => {
         </View>
 
         <TouchableOpacity style={styles.overlay} onPress={handleNextCard}>
-          {height > 700 && (
+          {height > 800 && (
             <Image
               source={require("../../assets/RAFIX.png")}
               style={styles.logo}
@@ -321,7 +321,7 @@ const Game = ({ route, navigation }) => {
           onRequestClose={() => setModalVisible(false)}
         >
           <View style={styles.modalBackground}>
-            <Text style={styles.modalText}>{renderModalContent()}</Text>
+            {renderModalContent()}
           </View>
         </Modal>
       </ImageBackground>
