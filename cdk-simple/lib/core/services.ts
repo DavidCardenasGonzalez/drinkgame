@@ -7,6 +7,7 @@ import {
   aws_cognito as cognito,
   aws_ssm as ssm,
   aws_lambda_nodejs as ln,
+  aws_lambda as lambda,
   Duration,
 } from "aws-cdk-lib";
 import { NodejsServiceFunction } from "../constructs/lambda";
@@ -15,6 +16,8 @@ interface AppServicesProps {
   employeeTable: dynamodb.ITable;
   categoriesTable: dynamodb.ITable;
   cardsTable: dynamodb.ITable;
+  storiesTable: dynamodb.ITable;        // Nueva tabla
+  storyNodesTable: dynamodb.ITable;    // Nueva tabla
   uploadBucket: s3.IBucket;
   assetBucket: s3.IBucket;
   userPool: cognito.IUserPool;
@@ -34,6 +37,10 @@ export class AppServices extends Construct {
   public readonly cardsService: ln.NodejsFunction;
 
   public readonly publicService: ln.NodejsFunction;
+
+  public readonly storiesService: ln.NodejsFunction;
+
+  public readonly storyNodesService: ln.NodejsFunction;
 
   constructor(scope: Construct, id: string, props: AppServicesProps) {
     super(scope, id);
@@ -163,6 +170,67 @@ export class AppServices extends Construct {
       })
     );
 
+     // Stories Service ------------------------------------------------------
+     this.storiesService = new NodejsServiceFunction(this, "StoriesServiceLambda", {
+      entry: path.join(__dirname, "../../../services/stories/index.js"),
+      runtime: lambda.Runtime.NODEJS_16_X
+    });
+
+    props.storiesTable.grantReadWriteData(this.storiesService);
+    this.storiesService.addEnvironment(
+      "DYNAMO_DB_TABLE",
+      props.storiesTable.tableName
+    );
+    this.storiesService.addEnvironment(
+      "USER_POOL_ID",
+      props.userPool.userPoolId
+    );
+    this.storiesService.addEnvironment(
+      "ASSET_BUCKET",
+      props.assetBucket.bucketName
+    );
+    props.assetBucket.grantReadWrite(this.storiesService);
+
+    this.storiesService.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [props.userPool.userPoolArn],
+        actions: ["cognito-idp:*"],
+      })
+    );
+
+    // Story Nodes Service -------------------------------------------------
+    this.storyNodesService = new NodejsServiceFunction(this, "StoryNodesServiceLambda", {
+      entry: path.join(__dirname, "../../../services/storyNodes/index.js"),  // Asegúrate de que este path sea correcto
+      timeout: Duration.seconds(10),
+      runtime: lambda.Runtime.NODEJS_16_X
+    });
+
+    props.storyNodesTable.grantReadWriteData(this.storyNodesService);
+    this.storyNodesService.addEnvironment(
+      "DYNAMO_DB_TABLE",
+      props.storyNodesTable.tableName
+    );
+    this.storyNodesService.addEnvironment(
+      "STORIES_DB_TABLE",
+      props.storiesTable.tableName
+    );
+    this.storyNodesService.addEnvironment(
+      "USER_POOL_ID",
+      props.userPool.userPoolId
+    );
+    this.storyNodesService.addEnvironment(
+      "ASSET_BUCKET",
+      props.assetBucket.bucketName
+    );
+    props.assetBucket.grantReadWrite(this.storyNodesService);
+
+    this.storyNodesService.addToRolePolicy(
+      new iam.PolicyStatement({
+        resources: [props.userPool.userPoolArn],
+        actions: ["cognito-idp:*"],
+      })
+    );
+
 
     // Public Service ------------------------------------------------------
 
@@ -176,6 +244,8 @@ export class AppServices extends Construct {
 
     props.categoriesTable.grantReadWriteData(this.publicService);
     props.cardsTable.grantReadWriteData(this.publicService);
+    props.storiesTable.grantReadWriteData(this.publicService);
+    props.storyNodesTable.grantReadWriteData(this.publicService);
     this.publicService.addEnvironment(
       "ASSET_BUCKET",
       props.assetBucket.bucketName
@@ -187,6 +257,14 @@ export class AppServices extends Construct {
     this.publicService.addEnvironment(
       "CARDS_DB_TABLE",
       props.cardsTable.tableName
+    );
+    this.publicService.addEnvironment(
+      "STORIES_DB_TABLE",
+      props.storiesTable.tableName
+    );
+    this.publicService.addEnvironment(
+      "STORY_NODES_DB_TABLE",
+      props.storyNodesTable.tableName
     );
 
     props.assetBucket.grantReadWrite(this.publicService);

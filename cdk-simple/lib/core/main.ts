@@ -25,10 +25,11 @@ export class BodazenInfrastructureMain extends Stack {
       employeeTable: this.database.employeeTable,
       categoriesTable: this.database.categoriesTable,
       cardsTable: this.database.cardsTable,
+      storiesTable: this.database.storiesTable,
+      storyNodesTable: this.database.storyNodesTable,
       uploadBucket: this.storage.uploadBucket,
       assetBucket: this.storage.assetBucket,
       userPool: this.auth.userPool,
-      // postAuthTrigger: this.auth.postAuthTrigger,
     });
     services.node.addDependency(this.storage);
 
@@ -36,6 +37,8 @@ export class BodazenInfrastructureMain extends Stack {
       categoriesService: services.categoriesService,
       cardsService: services.cardsService,
       employeeService: services.employeeService,
+      storiesService: services.storiesService,
+      storyNodesService: services.storyNodesService,
       usersService: services.usersService,
       userPool: this.auth.userPool,
       userPoolClient: this.auth.userPoolClient,

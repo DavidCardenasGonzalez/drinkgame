@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "categoryId": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

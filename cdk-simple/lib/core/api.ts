@@ -18,6 +18,8 @@ interface ApplicationAPIProps {
   cardsService: lambda.IFunction;
   usersService: lambda.IFunction;
   publicService: lambda.IFunction;
+  storiesService: lambda.IFunction;
+  storyNodesService: lambda.IFunction;
   userPool: cognito.IUserPool;
   userPoolClient: cognito.IUserPoolClient;
 }
@@ -139,6 +141,32 @@ export class ApplicationAPI extends Construct {
       methods: serviceMethods,
       integration: publicServiceIntegration,
       authorizer: new apigv2.HttpNoneAuthorizer(),
+    });
+
+     // Stories Service ------------------------------------------------------
+     const storiesServiceIntegration = new HttpLambdaIntegration(
+      "StoriesIntegration",
+      props.storiesService
+    );
+
+    this.httpApi.addRoutes({
+      path: `/stories/{proxy+}`,
+      methods: serviceMethods,
+      integration: storiesServiceIntegration,
+      authorizer,
+    });
+
+    // Story Nodes Service ------------------------------------------------------
+    const storyNodesServiceIntegration = new HttpLambdaIntegration(
+      "StoryNodesIntegration",
+      props.storyNodesService
+    );
+
+    this.httpApi.addRoutes({
+      path: `/story-nodes/{proxy+}`,
+      methods: serviceMethods,
+      integration: storyNodesServiceIntegration,
+      authorizer,
     });
 
     // Moderate ----------------------------------------------------------
