@@ -2,6 +2,7 @@ import axios from 'axios';
 import createAuthRefreshInterceptor from 'axios-auth-refresh';
 import { Auth } from 'aws-amplify';
 
+// eslint-disable-next-line no-undef
 const SERVICES_HOST = window.appConfig.apiEndpoint;
 let client;
 
@@ -139,6 +140,69 @@ export const getAllCategories = async () => {
   return results.data;
 };
 
+export const createStory = async (body) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.post(`${SERVICES_HOST}/stories/`, body);
+};
+
+export const getAllStories = async () => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/stories/`);
+  return results.data;
+};
+
+export const getStory = async (id) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/stories/${id}`);
+  return results.data;
+};
+
+export const deleteStory = async (id) => {
+  console.log('deleteStory', id);
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.delete(`${SERVICES_HOST}/stories/${id}`);
+};
+
+export const updateStoryProfile = async (PK, status, shouldDeletePicture, picture, type) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const formData = new FormData();
+  if (PK) {
+    formData.append('PK', PK);
+  }
+  if (status) {
+    formData.append('status', status);
+  }
+  if (shouldDeletePicture) {
+    formData.append('deletePicture', true);
+  }
+  if (picture) {
+    formData.append('picture', picture);
+  }
+  if (type) {
+    formData.append('type', type);
+  }
+  const results = await client.patch(`${SERVICES_HOST}/stories/actions/updatePicture`, formData);
+  return results.data.user;
+};
+
+export const simulateStory = async (body) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.post(`${SERVICES_HOST}/stories/actions/simulate`, body);
+  return results.data;
+};
+
 export const getCategory = async (id) => {
   if (!client) {
     await createAPIClient();
@@ -249,6 +313,72 @@ export const updateCardProfile = async (PK, categoryId, shouldDeletePicture, pic
     formData.append('type', type);
   }
   const results = await client.patch(`${SERVICES_HOST}/cards/actions/updatePicture`, formData);
+  return results.data.user;
+};
+
+// StoryNodes ----------------------------------------
+
+export const createStoryNode = async (body) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.post(`${SERVICES_HOST}/storyNodes/`, body);
+};
+
+export const getAllStoryNodes = async () => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/storyNodes/`);
+  return results.data;
+};
+
+export const getStoryStoryNodes = async (storyId) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/storyNodes/story/${storyId}`);
+  return results.data;
+};
+
+export const getStoryNode = async (id) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const results = await client.get(`${SERVICES_HOST}/storyNodes/${id}`);
+  return results.data;
+};
+
+export const deleteStoryNode = async (id, storyId) => {
+  console.log('deleteStoryNode', id);
+  if (!client) {
+    await createAPIClient();
+  }
+  await client.delete(`${SERVICES_HOST}/storyNodes/${id}/story/${storyId}`);
+};
+
+// eslint-disable-next-line max-len
+export const updateStoryNodeProfile = async (PK, storyId, shouldDeletePicture, picture, type) => {
+  if (!client) {
+    await createAPIClient();
+  }
+  const formData = new FormData();
+  if (PK) {
+    formData.append('PK', PK);
+  }
+  if (storyId) {
+    formData.append('storyId', storyId);
+  }
+  if (shouldDeletePicture) {
+    formData.append('deletePicture', true);
+  }
+  if (picture) {
+    formData.append('picture', picture);
+  }
+  if (type) {
+    formData.append('type', type);
+  }
+  const results = await client.patch(`${SERVICES_HOST}/storyNodes/actions/updatePicture`, formData);
   return results.data.user;
 };
 

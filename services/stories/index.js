@@ -100,11 +100,11 @@ const getStory = async (request, response) => {
     TableName: tableName,
     KeyConditionExpression: "PK = :key",
     ExpressionAttributeValues: {
-      ":key": categoryId,
+      ":key": storyId,
     },
   };
-  const results = await dynamoDB.get(params).promise();
-  const story = results.Item;
+  const results = await dynamoDB.query(params).promise();
+  const story = results.Items[0];
   if (story.coverImage) {
     story.coverImageURL = await getSignedURL(story.coverImage);
   }

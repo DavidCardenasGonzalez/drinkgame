@@ -18,7 +18,7 @@ import { Auth } from 'aws-amplify';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useUser } from '../UserContext';
-import { getAllCategories } from '../services';
+import { getAllCategories, getAllStories } from '../services';
 
 const useStyles = makeStyles(() => ({
   menu: {
@@ -73,7 +73,10 @@ function Menu(props) {
   const classes = useStyles();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [categories, setCategories] = React.useState([]);
+  const [stories, setStories] = React.useState([]);
   const [open, setOpen] = React.useState(false);
+  const [openNodes, setOpenNodes] = React.useState(false);
+
   const { user } = useUser();
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -84,6 +87,10 @@ function Menu(props) {
     const cats = data.sort((a, b) => a.order - b.order)
       .filter((category) => category.status === 'active');
     setCategories(cats);
+    const storiesData = await getAllStories();
+    const storiesSorted = storiesData.sort((a, b) => a.order - b.order)
+      .filter((story) => story.status === 'active');
+    setStories(storiesSorted);
   };
 
   useEffect(() => {
@@ -183,18 +190,52 @@ function Menu(props) {
           </List>
         </Collapse>
 
-        {/* <ListItem>
+        <ListItem disablePadding>
           <ListItemButton
             onClick={() => {
-              history.push('/cards');
+              history.push('/stories');
             }}
           >
             <ListItemIcon className={classes.menuIcon}>
               <Diversity3Icon />
             </ListItemIcon>
-            <ListItemText primary="Cartas" />
+            <ListItemText primary="Historias" />
           </ListItemButton>
-        </ListItem> */}
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            onClick={() => {
+              setOpenNodes(!openNodes);
+            }}
+          >
+            <ListItemIcon className={classes.menuIcon}>
+              <Diversity3Icon />
+            </ListItemIcon>
+            <ListItemText primary="Nodos" />
+            {openNodes ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+        </ListItem>
+        <Collapse in={openNodes} timeout="auto" unmountOnExit>
+          <List component="div">
+            {stories.map((story) => (
+              <ListItem key={story.name}>
+                <ListItemButton
+                  onClick={() => {
+                    history.push({
+                      pathname: `/storyNodes/${story.PK}`,
+                      state: { story },
+                    });
+                  }}
+                >
+                  <ListItemIcon className={classes.menuIcon}>
+                    <Diversity3Icon />
+                  </ListItemIcon>
+                  <ListItemText primary={story.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
       </List>
       <Divider />
     </div>

@@ -16,11 +16,12 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
-const PlayerList = ({ navigation }) => {
+const PlayerList = ({ navigation, route }) => {
   const [playerList, setPlayerList] = useState([]);
   const [playerName, setPlayerName] = useState("");
   const { height, width } = useWindowDimensions();
   console.log(height, width);
+
   useEffect(() => {
     AsyncStorage.getItem("playerList").then(function (res) {
       if (!res) {
@@ -48,6 +49,21 @@ const PlayerList = ({ navigation }) => {
   const confirmDeleteAllPlayers = () => {
     console.log(playerList);
     setPlayerList([]);
+  };
+
+  const handlePlay = () => {
+    if (route && route.name === "Players") {
+      navigation.navigate("Categories", {
+        playerList,
+      });
+    } else if (route && route.name === "PlayersStory") {
+      navigation.navigate("StoryConfig", {
+        playerList,
+      });
+    } else {
+      // Opcional: una ruta por defecto o mensaje de error
+      console.warn("Ruta no reconocida:", route?.name);
+    }
   };
 
   return (
@@ -127,11 +143,7 @@ const PlayerList = ({ navigation }) => {
                 playerList.length < 1 && styles.buttonDisabled,
               ]}
               disabled={playerList.length < 1}
-              onPress={() => {
-                navigation.navigate("Categories", {
-                  playerList,
-                });
-              }}
+              onPress={handlePlay}
             >
               <Text style={styles.buttonText}>JUGAR</Text>
             </TouchableOpacity>

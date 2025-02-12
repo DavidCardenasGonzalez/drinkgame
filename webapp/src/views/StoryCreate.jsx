@@ -8,6 +8,8 @@ import {
   Avatar,
   CardContent,
   Button,
+  FormControlLabel,
+  Checkbox,
   FormControl,
   InputLabel,
   Select,
@@ -19,11 +21,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
-import Autocomplete from '@mui/material/Autocomplete';
 import Page from '../containers/Page';
-import { createCard, getCard, updateCardProfile } from '../services';
-
-const infoOptions = ['quePrefieresPulgares', 'encuestaDeDedos', 'passcode'];
+import { createStory, getStory, updateStoryProfile } from '../services';
+// import { useUser } from '../UserContext';
 
 const useStyles = makeStyles((theme) => ({
   input: {
@@ -58,128 +58,101 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function CardCreate() {
-  const { cardId, categoryId } = useParams();
-  const [activeStep, setActiveStep] = useState(0);
+function StoryCreate() {
+  const { storyId } = useParams();
+  const [activeStep, setActiveStep] = React.useState(0);
+  // const [completed, setCompleted] = React.useState({});
   const classes = useStyles();
-
-  const [type, setType] = useState('question');
-  // const [categoryId, setCategoryId] = useState('');
-  const [text, setText] = useState('');
-
-  // response
-  const [text2, setText2] = useState('');
-  const [duration, setDuration] = useState(1);
-  const [timeout, setTimeout] = useState(0);
-  const [passcode, setPasscode] = useState('');
-  const [secondaryText, setSecondaryText] = useState('');
-  const [info, setInfo] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [goal, setGoal] = useState('');
+  const [order, setOrder] = useState('');
+  const [players, setPlayers] = useState([]);
+  const [isPremium, setIsPremium] = useState(false);
+  const [haveAlcohol, setHaveAlcohol] = useState(false);
   const [status, setStatus] = useState('active');
-
-  const [originalCard, setOrignalCard] = useState({});
+  const [originalStory, setOrignalStory] = useState({});
   const [isSuccessVisible, setIsSuccessVisible] = useState(false);
   const [isErrorVisible, setIsErrorVisible] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [isValid, setIsValid] = useState(false);
 
-  const [image1URL, setImage1URL] = useState(null);
-  const [image1File, setImage1File] = useState(null);
+  const [avatarImageURL, setAvatarImageURL] = useState(null);
+  const [avatarImageFile, setAvatarImageFile] = useState(null);
 
-  const [image2URL, setImage2URL] = useState(null);
-  const [image2File, setImage2File] = useState(null);
+  const [backgroudImageURL, setBackgroudImageURL] = useState(null);
+  const [backgroudImageFile, setBackgroudImageFile] = useState(null);
   // eslint-disable-next-line no-unused-vars
   const [fileKey, setFileKey] = useState(Date.now());
   // eslint-disable-next-line no-unused-vars
   const [updating, setUpdating] = useState(false);
   useEffect(() => {
-    if (!text || text.length < 1) {
+    if (!name || name.length < 1) {
       setIsValid(false);
       return;
     }
-    if (!categoryId || categoryId.length < 1) {
+    if (!description || description.length < 1) {
       setIsValid(false);
       return;
     }
-    if (!type || type.length < 1) {
+    if (!goal || goal.length < 1) {
       setIsValid(false);
       return;
     }
-
-    if ((type === 'question' || type === 'virus') && (!text2 || text2.length < 1)) {
+    if (!order) {
       setIsValid(false);
       return;
     }
-
-    if (type === 'virus' && !duration) {
+    if (!players) {
       setIsValid(false);
       return;
     }
-
-    if (type === 'timeout' && !timeout) {
-      setIsValid(false);
-      return;
-    }
-
-    if (type === 'passcode' && !passcode) {
-      setIsValid(false);
-      return;
-    }
-
-    if (type === 'roulette' && !secondaryText) {
-      setIsValid(false);
-      return;
-    }
-
     if (!status || status.length < 3) {
       setIsValid(false);
       return;
     }
     setIsValid(true);
-  }, [text, categoryId, type, text2, duration, status, timeout, passcode, secondaryText]);
+  }, [name, description, goal, order, players, status]);
 
   useEffect(() => {
     (async () => {
-      console.log('cardId', cardId);
-      if (!cardId || cardId === 'create') {
+      if (!storyId) {
         return;
       }
-      const data = await getCard(cardId);
-      setOrignalCard(data);
-      setType(data.type);
-      setText(data.text);
-      // setCategoryId(data.categoryId);
-      setText2(data.text2);
-      setDuration(data.duration);
-      setTimeout(data.timeout);
+      const data = await getStory(storyId);
+      setOrignalStory(data);
+      setName(data.name);
+      setDescription(data.description);
+      setGoal(data.goal);
+      setOrder(data.order);
+      setPlayers(data.players);
       setStatus(data.status);
-      setInfo(data.info);
-      setPasscode(data.passcode);
-      setSecondaryText(data.secondaryText);
-      if (data.image1URL) {
-        setImage1URL(data.image1URL);
+      setIsPremium(data.isPremium);
+      setHaveAlcohol(data.haveAlcohol);
+      if (data.avatarURL) {
+        setAvatarImageURL(data.avatarURL);
       }
-      if (data.image2URL) {
-        setImage2URL(data.image2URL);
+      if (data.backgroundURL) {
+        setBackgroudImageURL(data.backgroundURL);
       }
     })();
-  }, [cardId]);
+  }, [storyId]);
 
-  const createCardF = async () => {
+  const createStoryF = async () => {
     setSubmitting(true);
+    console.log('createStoryF', players);
     try {
-      await createCard({
-        ...originalCard,
-        type,
-        text,
-        categoryId,
-        text2,
-        duration,
-        timeout,
-        passcode,
-        secondaryText,
+      await createStory({
+        ...originalStory,
+        name,
+        description,
+        goal,
+        order,
+        players,
         status,
-        info,
+        isPremium,
+        haveAlcohol,
       });
     } catch (err) {
       setSubmitting(false);
@@ -196,68 +169,68 @@ function CardCreate() {
     setActiveStep(step);
   };
 
-  const handleImage1Change = (event) => {
+  const handleAvatarChange = (event) => {
     const newImage = event.target.files[0];
-    setImage1File(newImage);
-    setImage1URL(URL.createObjectURL(newImage));
+    setAvatarImageFile(newImage);
+    setAvatarImageURL(URL.createObjectURL(newImage));
   };
 
-  const removeImage1File = () => {
-    setImage1File(null);
-    setImage1URL(null);
+  const removeAvatarFile = () => {
+    setAvatarImageFile(null);
+    setAvatarImageURL(null);
     setFileKey(Date.now());
   };
 
-  const updateImage1Pictures = async () => {
+  const updateAvatarPictures = async () => {
     setUpdating(true);
     let shouldDeletePicture = false;
     let file;
-    if (originalCard.image1 && !image1URL) {
+    if (originalStory.avatarURL && !avatarImageURL) {
       // Photo needs to be deleted
       shouldDeletePicture = true;
-    } else if (originalCard.image1 !== image1URL) {
+    } else if (originalStory.avatarURL !== avatarImageURL) {
       // Photo needs to be updated
-      file = image1File;
+      file = avatarImageFile;
     }
-    await updateCardProfile(
-      originalCard.PK,
-      originalCard.categoryId,
+    await updateStoryProfile(
+      originalStory.PK,
+      originalStory.status,
       shouldDeletePicture,
       file,
-      'image1',
+      'avatar',
     );
     setUpdating(false);
   };
 
-  const handleImage2Change = (event) => {
+  const handleBackgroudChange = (event) => {
     const newImage = event.target.files[0];
-    setImage2File(newImage);
-    setImage2URL(URL.createObjectURL(newImage));
+    setBackgroudImageFile(newImage);
+    setBackgroudImageURL(URL.createObjectURL(newImage));
   };
 
-  const removeImage2File = () => {
-    setImage2File(null);
-    setImage2URL(null);
+  const removeBackgroudFile = () => {
+    setBackgroudImageFile(null);
+    setBackgroudImageURL(null);
     setFileKey(Date.now());
   };
 
-  const updateImage2Pictures = async () => {
+  const updateBackgroudPictures = async () => {
     setUpdating(true);
     let shouldDeletePicture = false;
     let file;
-    if (originalCard.image2URL && !image2URL) {
+    if (originalStory.backgroudURL && !backgroudImageURL) {
       // Photo needs to be deleted
       shouldDeletePicture = true;
-    } else if (originalCard.image2URL !== image2URL) {
+    } else if (originalStory.backgroudURL !== backgroudImageURL) {
       // Photo needs to be updated
-      file = image2File;
+      file = backgroudImageFile;
     }
-    await updateCardProfile(
-      originalCard.PK,
-      originalCard.categoryId,
+    await updateStoryProfile(
+      originalStory.PK,
+      originalStory.status,
       shouldDeletePicture,
       file,
-      'image2',
+      'backgroud',
     );
     setUpdating(false);
   };
@@ -277,17 +250,17 @@ function CardCreate() {
       link: '/',
     },
     {
-      name: 'Cartas',
-      link: `/cards/${categoryId}`,
+      name: 'Historias',
+      link: '/stories',
     },
     {
       name: 'Formulario',
-      link: '/cards',
+      link: '/stories',
     },
   ];
 
   return (
-    <Page title="Crear Carta" breadcrumbs={getBreadcrumbs()}>
+    <Page title="Crear Historias" breadcrumbs={getBreadcrumbs()}>
       {isSuccessVisible && (
         <MuiAlert
           onClose={() => setIsSuccessVisible(false)}
@@ -296,7 +269,7 @@ function CardCreate() {
           elevation={6}
           variant="filled"
         >
-          Carta Creada con Exito
+          Historias Creada con Exito
         </MuiAlert>
       )}
       {isErrorVisible && (
@@ -307,7 +280,7 @@ function CardCreate() {
           elevation={6}
           variant="filled"
         >
-          No ha sido posible crear la categoría, intenta más tarde
+          No ha sido posible crear la historia, intenta más tarde
         </MuiAlert>
       )}
       <Grid container spacing={2} alignItems="stretch">
@@ -321,137 +294,73 @@ function CardCreate() {
                       Información General
                     </StepButton>
                   </Step>
-                  <Step completed={isValid && image1URL}>
+                  <Step completed={isValid && avatarImageURL}>
                     <StepButton color="inherit" onClick={handleStep(1)} disabled={!isValid}>
-                      Foto 1
+                      Foto Avatar
                     </StepButton>
                   </Step>
-                  <Step completed={isValid && image2URL}>
+                  <Step completed={isValid && backgroudImageURL}>
                     <StepButton color="inherit" onClick={handleStep(2)} disabled={!isValid}>
-                      Foto 2
+                      Foto Fondo
                     </StepButton>
                   </Step>
                 </Stepper>
               </div>
               {activeStep === 0 ? (
                 <div>
-                  <FormControl fullWidth>
-                    <InputLabel id="status-label">Tipo</InputLabel>
-                    <Select
-                      className={classes.input}
-                      labelId="status-label"
-                      id="status"
-                      value={type}
-                      onChange={(e) => setType(e.target.value)}
-                      disabled={submitting}
-                      required
-                    >
-                      <MenuItem value="text">Texto</MenuItem>
-                      <MenuItem value="question">Question</MenuItem>
-                      <MenuItem value="virus">Virus</MenuItem>
-                      <MenuItem value="timeout">Contra reloj</MenuItem>
-                      <MenuItem value="passcode">Palabra clave</MenuItem>
-                      <MenuItem value="roulette">Ruleta</MenuItem>
-                    </Select>
-                  </FormControl>
                   <TextField
-                    id="text"
+                    id="name"
                     className={classes.input}
-                    label="Texto"
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    label="Nombre"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     required
                     disabled={submitting}
-                    multiline
-                    rows={8}
                     fullWidth
                   />
-                  {(type === 'question' || type === 'virus') && (
-                    <TextField
-                      id="text2"
-                      className={classes.input}
-                      label="Texto 2"
-                      value={text2}
-                      onChange={(e) => setText2(e.target.value)}
-                      multiline
-                      rows={8}
-                      required={type === 'question' || type === 'virus'}
-                      disabled={submitting}
-                      fullWidth
-                    />
-                  )}
-                  {type === 'virus' && (
-                    <TextField
-                      id="duration"
-                      className={classes.input}
-                      label="Duración"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      required={type === 'virus'}
-                      disabled={submitting}
-                      fullWidth
-                    />
-                  )}
-                  {type === 'timeout' && (
-                    <TextField
-                      id="timeout"
-                      type="number"
-                      className={classes.input}
-                      label="Duracion en segundos"
-                      value={timeout}
-                      onChange={(e) => setTimeout(e.target.value)}
-                      required={type === 'timeout'}
-                      disabled={submitting}
-                      fullWidth
-                    />
-                  )}
-
-                  {type === 'passcode' && (
-                    <TextField
-                      id="passcode"
-                      className={classes.input}
-                      label="Palabra clave"
-                      value={passcode}
-                      onChange={(e) => setPasscode(e.target.value)}
-                      required={type === 'passcode'}
-                      disabled={submitting}
-                      fullWidth
-                    />
-                  )}
-
-                  {type === 'roulette' && (
-                    <TextField
-                      id="secondaryText"
-                      className={classes.input}
-                      label="Texto secundario"
-                      value={secondaryText}
-                      onChange={(e) => setSecondaryText(e.target.value)}
-                      required={type === 'roulette'}
-                      disabled={submitting}
-                      fullWidth
-                    />
-                  )}
-
-                  <Autocomplete
+                  <TextField
+                    id="description"
                     className={classes.input}
-                    freeSolo
-                    options={infoOptions}
-                    value={info}
-                    onChange={(e, newValue) => setInfo(newValue)}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                        label="Información adicional"
-                        onChange={(e) => setInfo(e.target.value)}
-                        fullWidth
-                      />
-                    )}
+                    label="Descripción"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    required
+                    disabled={submitting}
+                    fullWidth
                   />
-
+                  <TextField
+                    id="goal"
+                    className={classes.input}
+                    label="Meta"
+                    value={goal}
+                    onChange={(e) => setGoal(e.target.value)}
+                    required
+                    disabled={submitting}
+                    fullWidth
+                  />
+                  <TextField
+                    id="order"
+                    className={classes.input}
+                    label="Orden"
+                    value={order}
+                    onChange={(e) => setOrder(e.target.value)}
+                    required
+                    disabled={submitting}
+                    fullWidth
+                  />
+                  <TextField
+                    id="players"
+                    className={classes.input}
+                    label="Jugadores"
+                    value={players}
+                    onChange={(e) => setPlayers(e.target.value)}
+                    required
+                    disabled={submitting}
+                    fullWidth
+                  />
                   <FormControl fullWidth>
                     <InputLabel id="status-label">Estado</InputLabel>
                     <Select
-                      className={classes.input}
                       labelId="status-label"
                       id="status"
                       value={status}
@@ -463,22 +372,44 @@ function CardCreate() {
                       <MenuItem value="inactive">Inactive</MenuItem>
                     </Select>
                   </FormControl>
+                  <FormControlLabel
+                    control={(
+                      <Checkbox
+                        checked={isPremium}
+                        disabled={submitting}
+                        onChange={() => setIsPremium(!isPremium)}
+                        color="primary" // Opcional, puedes personalizar el color del checkbox
+                      />
+                    )}
+                    label="¿Es premium?"
+                  />
+                  <FormControlLabel
+                    control={(
+                      <Checkbox
+                        checked={haveAlcohol}
+                        disabled={submitting}
+                        onChange={() => setHaveAlcohol(!haveAlcohol)}
+                        color="primary" // Opcional, puedes personalizar el color del checkbox
+                      />
+                    )}
+                    label="¿Tiene alcohol?"
+                  />
                 </div>
               ) : null}
               {activeStep === 1 ? (
                 <div>
-                  <Avatar src={image1URL} className={classes.profilePicPreview} />
+                  <Avatar src={avatarImageURL} className={classes.profilePicPreview} />
                   <input
                     accept="image/*"
                     className={classes.input}
                     style={{ display: 'none' }}
                     id="raised-button-file"
                     key={fileKey}
-                    onChange={handleImage1Change}
+                    onChange={handleAvatarChange}
                     type="file"
                   />
                   <label htmlFor="raised-button-file">
-                    {!image1URL && (
+                    {!avatarImageURL && (
                       <Button
                         variant="outlined"
                         component="span"
@@ -488,7 +419,7 @@ function CardCreate() {
                         Add Picture
                       </Button>
                     )}
-                    {image1URL && (
+                    {avatarImageURL && (
                       <Button
                         variant="outlined"
                         component="span"
@@ -499,12 +430,12 @@ function CardCreate() {
                       </Button>
                     )}
                   </label>
-                  {image1URL && (
+                  {avatarImageURL && (
                     <Button
                       variant="outlined"
                       color="secondary"
                       component="span"
-                      onClick={removeImage1File}
+                      onClick={removeAvatarFile}
                       disabled={updating}
                       className={classes.button}
                     >
@@ -515,7 +446,7 @@ function CardCreate() {
                   <Button
                     variant="outlined"
                     component="span"
-                    onClick={updateImage1Pictures}
+                    onClick={updateAvatarPictures}
                     // disabled={updating}
                     className={classes.button}
                   >
@@ -525,18 +456,18 @@ function CardCreate() {
               ) : null}
               {activeStep === 2 ? (
                 <div>
-                  <Avatar src={image2URL} className={classes.profilePicPreview} />
+                  <Avatar src={backgroudImageURL} className={classes.profilePicPreview} />
                   <input
                     accept="image/*"
                     className={classes.input}
                     style={{ display: 'none' }}
                     id="raised-button-file"
                     key={fileKey}
-                    onChange={handleImage2Change}
+                    onChange={handleBackgroudChange}
                     type="file"
                   />
                   <label htmlFor="raised-button-file">
-                    {!image2URL && (
+                    {!backgroudImageURL && (
                       <Button
                         variant="outlined"
                         component="span"
@@ -546,7 +477,7 @@ function CardCreate() {
                         Add Picture
                       </Button>
                     )}
-                    {image2URL && (
+                    {backgroudImageURL && (
                       <Button
                         variant="outlined"
                         component="span"
@@ -557,12 +488,12 @@ function CardCreate() {
                       </Button>
                     )}
                   </label>
-                  {image2URL && (
+                  {backgroudImageURL && (
                     <Button
                       variant="outlined"
                       color="secondary"
                       component="span"
-                      onClick={removeImage2File}
+                      onClick={removeBackgroudFile}
                       disabled={updating}
                       className={classes.button}
                     >
@@ -573,7 +504,7 @@ function CardCreate() {
                   <Button
                     variant="outlined"
                     component="span"
-                    onClick={updateImage2Pictures}
+                    onClick={updateBackgroudPictures}
                     // disabled={updating}
                     className={classes.button}
                   >
@@ -592,9 +523,9 @@ function CardCreate() {
             color="primary"
             disabled={!isValid}
             startIcon={getButtonIcon()}
-            onClick={createCardF}
+            onClick={createStoryF}
           >
-            Crear Carta
+            {originalStory && originalStory.PK ? 'Actualizar' : 'Crear Categoria'}
           </Button>
         </Grid>
       </Grid>
@@ -602,4 +533,4 @@ function CardCreate() {
   );
 }
 
-export default CardCreate;
+export default StoryCreate;

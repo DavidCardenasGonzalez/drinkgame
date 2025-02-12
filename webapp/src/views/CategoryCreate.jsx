@@ -155,7 +155,7 @@ function CategoryCreate() {
   };
 
   const handleAvatarChange = (event) => {
-    const newImage = event.target?.files?.[0];
+    const newImage = event.target.files[0];
     setAvatarImageFile(newImage);
     setAvatarImageURL(URL.createObjectURL(newImage));
   };
@@ -188,7 +188,7 @@ function CategoryCreate() {
   };
 
   const handleBackgroudChange = (event) => {
-    const newImage = event.target?.files?.[0];
+    const newImage = event.target.files[0];
     setBackgroudImageFile(newImage);
     setBackgroudImageURL(URL.createObjectURL(newImage));
   };

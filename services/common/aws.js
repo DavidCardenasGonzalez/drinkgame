@@ -86,6 +86,16 @@ const cisp = () => {
   return _cisp;
 };
 
+let _polly;
+
+const polly = () => {
+  if (!_polly) {
+    // Crea la instancia del cliente Polly
+    _polly = AWSXRay.captureAWSClient(new AWS.Polly());
+  }
+  return _polly;
+};
+
 export const AWSClients = {
   dynamoDB,
   s3,
@@ -93,4 +103,5 @@ export const AWSClients = {
   ses,
   eventbridge,
   cisp,
+  polly,
 };

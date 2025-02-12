@@ -12,6 +12,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  IconButton,
+  Typography,
 } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert';
 import PermIdentityIcon from '@material-ui/icons/PermIdentity';
@@ -20,8 +22,15 @@ import Stepper from '@mui/material/Stepper';
 import Step from '@mui/material/Step';
 import StepButton from '@mui/material/StepButton';
 import Autocomplete from '@mui/material/Autocomplete';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import RemoveCircleOutlineIcon from '@material-ui/icons/RemoveCircleOutline';
 import Page from '../containers/Page';
-import { createCard, getCard, updateCardProfile } from '../services';
+import {
+  createStoryNode,
+  getStoryNode,
+  updateStoryNodeProfile,
+  getStoryStoryNodes,
+} from '../services';
 
 const infoOptions = ['quePrefieresPulgares', 'encuestaDeDedos', 'passcode'];
 
@@ -56,27 +65,42 @@ const useStyles = makeStyles((theme) => ({
   stepperContainer: {
     margin: 15,
   },
+  optionContainer: {
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    position: 'relative',
+  },
+  removeButton: {
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+  },
+  addOptionButton: {
+    marginTop: theme.spacing(2),
+  },
 }));
 
-function CardCreate() {
-  const { cardId, categoryId } = useParams();
+function StoryNodeCreate() {
+  const { storyNodeId, storyId } = useParams();
   const [activeStep, setActiveStep] = useState(0);
   const classes = useStyles();
-
+  const [PK, setPK] = useState('');
   const [type, setType] = useState('question');
-  // const [categoryId, setCategoryId] = useState('');
+  // const [storyId, setStoryId] = useState('');
   const [text, setText] = useState('');
 
   // response
   const [text2, setText2] = useState('');
   const [duration, setDuration] = useState(1);
-  const [timeout, setTimeout] = useState(0);
+  const [timeout, setTimeoutValue] = useState(0);
   const [passcode, setPasscode] = useState('');
   const [secondaryText, setSecondaryText] = useState('');
   const [info, setInfo] = useState('');
   const [status, setStatus] = useState('active');
 
-  const [originalCard, setOrignalCard] = useState({});
+  const [originalStoryNode, setOrignalStoryNode] = useState({});
   const [isSuccessVisible, setIsSuccessVisible] = useState(false);
   const [isErrorVisible, setIsErrorVisible] = useState(false);
 
@@ -92,12 +116,16 @@ function CardCreate() {
   const [fileKey, setFileKey] = useState(Date.now());
   // eslint-disable-next-line no-unused-vars
   const [updating, setUpdating] = useState(false);
+
+  const [allNodes, setAllNodes] = useState([]);
+  const [options, setOptions] = useState([]);
+
   useEffect(() => {
     if (!text || text.length < 1) {
       setIsValid(false);
       return;
     }
-    if (!categoryId || categoryId.length < 1) {
+    if (!storyId || storyId.length < 1) {
       setIsValid(false);
       return;
     }
@@ -136,43 +164,53 @@ function CardCreate() {
       return;
     }
     setIsValid(true);
-  }, [text, categoryId, type, text2, duration, status, timeout, passcode, secondaryText]);
+  }, [text, storyId, type, text2, duration, status, timeout, passcode, secondaryText]);
 
   useEffect(() => {
     (async () => {
-      console.log('cardId', cardId);
-      if (!cardId || cardId === 'create') {
+      console.log('storyNodeId', storyNodeId);
+      if (!storyNodeId || storyNodeId === 'create') {
+        // Si es creación, obtener todos los nodos para el Autocomplete
+        const allNodesResp = await getStoryStoryNodes(storyId);
+        console.log('allNodesResp', allNodesResp);
+        setAllNodes(allNodesResp);
         return;
       }
-      const data = await getCard(cardId);
-      setOrignalCard(data);
+      const data = await getStoryNode(storyNodeId);
+      setOrignalStoryNode(data);
+      setPK(data.PK);
       setType(data.type);
       setText(data.text);
-      // setCategoryId(data.categoryId);
+      // setStoryId(data.storyId);
       setText2(data.text2);
       setDuration(data.duration);
-      setTimeout(data.timeout);
+      setTimeoutValue(data.timeout);
       setStatus(data.status);
       setInfo(data.info);
       setPasscode(data.passcode);
       setSecondaryText(data.secondaryText);
+      setOptions(data.options || []); // Cargar opciones existentes
       if (data.image1URL) {
         setImage1URL(data.image1URL);
       }
       if (data.image2URL) {
         setImage2URL(data.image2URL);
       }
+      const allNodesResp = await getStoryStoryNodes(storyId);
+      console.log('allNodesResp', allNodesResp);
+      setAllNodes(allNodesResp);
     })();
-  }, [cardId]);
+  }, [storyNodeId, storyId]);
 
-  const createCardF = async () => {
+  const createStoryNodeF = async () => {
     setSubmitting(true);
     try {
-      await createCard({
-        ...originalCard,
+      await createStoryNode({
+        ...originalStoryNode,
+        PK,
         type,
         text,
-        categoryId,
+        storyId,
         text2,
         duration,
         timeout,
@@ -180,6 +218,7 @@ function CardCreate() {
         secondaryText,
         status,
         info,
+        options, // Incluir opciones
       });
     } catch (err) {
       setSubmitting(false);
@@ -212,16 +251,16 @@ function CardCreate() {
     setUpdating(true);
     let shouldDeletePicture = false;
     let file;
-    if (originalCard.image1 && !image1URL) {
+    if (originalStoryNode.image1 && !image1URL) {
       // Photo needs to be deleted
       shouldDeletePicture = true;
-    } else if (originalCard.image1 !== image1URL) {
+    } else if (originalStoryNode.image1 !== image1URL) {
       // Photo needs to be updated
       file = image1File;
     }
-    await updateCardProfile(
-      originalCard.PK,
-      originalCard.categoryId,
+    await updateStoryNodeProfile(
+      originalStoryNode.PK,
+      originalStoryNode.storyId,
       shouldDeletePicture,
       file,
       'image1',
@@ -245,16 +284,16 @@ function CardCreate() {
     setUpdating(true);
     let shouldDeletePicture = false;
     let file;
-    if (originalCard.image2URL && !image2URL) {
+    if (originalStoryNode.image2URL && !image2URL) {
       // Photo needs to be deleted
       shouldDeletePicture = true;
-    } else if (originalCard.image2URL !== image2URL) {
+    } else if (originalStoryNode.image2URL !== image2URL) {
       // Photo needs to be updated
       file = image2File;
     }
-    await updateCardProfile(
-      originalCard.PK,
-      originalCard.categoryId,
+    await updateStoryNodeProfile(
+      originalStoryNode.PK,
+      originalStoryNode.storyId,
       shouldDeletePicture,
       file,
       'image2',
@@ -277,17 +316,35 @@ function CardCreate() {
       link: '/',
     },
     {
-      name: 'Cartas',
-      link: `/cards/${categoryId}`,
+      name: 'Nodos',
+      link: `/storyNodes/${storyId}`,
     },
     {
       name: 'Formulario',
-      link: '/cards',
+      link: '/storyNodes',
     },
   ];
 
+  // Funciones para manejar opciones
+  const handleAddOption = () => {
+    setOptions([...options, { text: '', nodeStory: null }]);
+  };
+
+  const handleRemoveOption = (index) => {
+    const newOptions = options.filter((_, idx) => idx !== index);
+    setOptions(newOptions);
+  };
+
+  const handleOptionChange = (index, field, value) => {
+    const newOptions = options.map((option, idx) => {
+      if (idx !== index) return option;
+      return { ...option, [field]: value };
+    });
+    setOptions(newOptions);
+  };
+
   return (
-    <Page title="Crear Carta" breadcrumbs={getBreadcrumbs()}>
+    <Page title="Crear Nodo" breadcrumbs={getBreadcrumbs()}>
       {isSuccessVisible && (
         <MuiAlert
           onClose={() => setIsSuccessVisible(false)}
@@ -296,7 +353,7 @@ function CardCreate() {
           elevation={6}
           variant="filled"
         >
-          Carta Creada con Exito
+          Nodo Creado con Éxito
         </MuiAlert>
       )}
       {isErrorVisible && (
@@ -307,7 +364,7 @@ function CardCreate() {
           elevation={6}
           variant="filled"
         >
-          No ha sido posible crear la categoría, intenta más tarde
+          No ha sido posible crear la storía, intenta más tarde
         </MuiAlert>
       )}
       <Grid container spacing={2} alignItems="stretch">
@@ -335,12 +392,11 @@ function CardCreate() {
               </div>
               {activeStep === 0 ? (
                 <div>
-                  <FormControl fullWidth>
-                    <InputLabel id="status-label">Tipo</InputLabel>
+                  <FormControl fullWidth className={classes.input}>
+                    <InputLabel id="type-label">Tipo</InputLabel>
                     <Select
-                      className={classes.input}
-                      labelId="status-label"
-                      id="status"
+                      labelId="type-label"
+                      id="type"
                       value={type}
                       onChange={(e) => setType(e.target.value)}
                       disabled={submitting}
@@ -354,6 +410,16 @@ function CardCreate() {
                       <MenuItem value="roulette">Ruleta</MenuItem>
                     </Select>
                   </FormControl>
+                  <TextField
+                    id="PK"
+                    className={classes.input}
+                    label="PK"
+                    value={PK}
+                    onChange={(e) => setPK(e.target.value)}
+                    required
+                    disabled={submitting}
+                    fullWidth
+                  />
                   <TextField
                     id="text"
                     className={classes.input}
@@ -385,6 +451,7 @@ function CardCreate() {
                       id="duration"
                       className={classes.input}
                       label="Duración"
+                      type="number"
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
                       required={type === 'virus'}
@@ -397,9 +464,9 @@ function CardCreate() {
                       id="timeout"
                       type="number"
                       className={classes.input}
-                      label="Duracion en segundos"
+                      label="Duración en segundos"
                       value={timeout}
-                      onChange={(e) => setTimeout(e.target.value)}
+                      onChange={(e) => setTimeoutValue(e.target.value)}
                       required={type === 'timeout'}
                       disabled={submitting}
                       fullWidth
@@ -448,10 +515,61 @@ function CardCreate() {
                     )}
                   />
 
-                  <FormControl fullWidth>
+                  {/* Sección para Opciones */}
+                  <Typography variant="h6" gutterBottom>
+                    Opciones
+                  </Typography>
+                  {options.map((option, index) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <div key={index} className={classes.optionContainer}>
+                      <IconButton
+                        className={classes.removeButton}
+                        onClick={() => handleRemoveOption(index)}
+                        aria-label="remove option"
+                      >
+                        <RemoveCircleOutlineIcon color="secondary" />
+                      </IconButton>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <TextField
+                            label="Texto de la Opción"
+                            value={option.text}
+                            onChange={(e) => handleOptionChange(index, 'text', e.target.value)}
+                            required
+                            fullWidth
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <Autocomplete
+                            options={allNodes.map((node) => node.PK)}
+                            value={option.nodeStory}
+                            onChange={(e, newValue) => handleOptionChange(index, 'nodeStory', newValue)}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Node Story PK"
+                                placeholder="Selecciona un PK"
+                                required
+                              />
+                            )}
+                          />
+                        </Grid>
+                      </Grid>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    startIcon={<AddCircleOutlineIcon />}
+                    onClick={handleAddOption}
+                    className={classes.addOptionButton}
+                  >
+                    Agregar Opción
+                  </Button>
+
+                  <FormControl fullWidth className={classes.input}>
                     <InputLabel id="status-label">Estado</InputLabel>
                     <Select
-                      className={classes.input}
                       labelId="status-label"
                       id="status"
                       value={status}
@@ -472,12 +590,12 @@ function CardCreate() {
                     accept="image/*"
                     className={classes.input}
                     style={{ display: 'none' }}
-                    id="raised-button-file"
+                    id="raised-button-file1"
                     key={fileKey}
                     onChange={handleImage1Change}
                     type="file"
                   />
-                  <label htmlFor="raised-button-file">
+                  <label htmlFor="raised-button-file1">
                     {!image1URL && (
                       <Button
                         variant="outlined"
@@ -530,12 +648,12 @@ function CardCreate() {
                     accept="image/*"
                     className={classes.input}
                     style={{ display: 'none' }}
-                    id="raised-button-file"
+                    id="raised-button-file2"
                     key={fileKey}
                     onChange={handleImage2Change}
                     type="file"
                   />
-                  <label htmlFor="raised-button-file">
+                  <label htmlFor="raised-button-file2">
                     {!image2URL && (
                       <Button
                         variant="outlined"
@@ -592,9 +710,9 @@ function CardCreate() {
             color="primary"
             disabled={!isValid}
             startIcon={getButtonIcon()}
-            onClick={createCardF}
+            onClick={createStoryNodeF}
           >
-            Crear Carta
+            Crear Nodo
           </Button>
         </Grid>
       </Grid>
@@ -602,4 +720,4 @@ function CardCreate() {
   );
 }
 
-export default CardCreate;
+export default StoryNodeCreate;

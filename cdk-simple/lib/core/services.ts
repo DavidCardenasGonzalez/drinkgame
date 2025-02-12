@@ -16,8 +16,8 @@ interface AppServicesProps {
   employeeTable: dynamodb.ITable;
   categoriesTable: dynamodb.ITable;
   cardsTable: dynamodb.ITable;
-  storiesTable: dynamodb.ITable;        // Nueva tabla
-  storyNodesTable: dynamodb.ITable;    // Nueva tabla
+  storiesTable: dynamodb.ITable; // Nueva tabla
+  storyNodesTable: dynamodb.ITable; // Nueva tabla
   uploadBucket: s3.IBucket;
   assetBucket: s3.IBucket;
   userPool: cognito.IUserPool;
@@ -25,7 +25,6 @@ interface AppServicesProps {
 }
 
 export class AppServices extends Construct {
-
   public readonly notificationsService: ln.NodejsFunction;
 
   public readonly usersService: ln.NodejsFunction;
@@ -135,20 +134,13 @@ export class AppServices extends Construct {
 
     // Cards Service ------------------------------------------------------
 
-    this.cardsService = new NodejsServiceFunction(
-      this,
-      "CardsServiceLambda",
-      {
-        entry: path.join(__dirname, "../../../services/cards/index.js"),
-      }
-    );
+    this.cardsService = new NodejsServiceFunction(this, "CardsServiceLambda", {
+      entry: path.join(__dirname, "../../../services/cards/index.js"),
+    });
 
     props.categoriesTable.grantReadWriteData(this.cardsService);
     props.cardsTable.grantReadWriteData(this.cardsService);
-    this.cardsService.addEnvironment(
-      "USER_POOL_ID",
-      props.userPool.userPoolId
-    );
+    this.cardsService.addEnvironment("USER_POOL_ID", props.userPool.userPoolId);
     this.cardsService.addEnvironment(
       "ASSET_BUCKET",
       props.assetBucket.bucketName
@@ -170,11 +162,15 @@ export class AppServices extends Construct {
       })
     );
 
-     // Stories Service ------------------------------------------------------
-     this.storiesService = new NodejsServiceFunction(this, "StoriesServiceLambda", {
-      entry: path.join(__dirname, "../../../services/stories/index.js"),
-      runtime: lambda.Runtime.NODEJS_16_X
-    });
+    // Stories Service ------------------------------------------------------
+    this.storiesService = new NodejsServiceFunction(
+      this,
+      "StoriesServiceLambda",
+      {
+        entry: path.join(__dirname, "../../../services/stories/index.js"),
+        runtime: lambda.Runtime.NODEJS_16_X,
+      }
+    );
 
     props.storiesTable.grantReadWriteData(this.storiesService);
     this.storiesService.addEnvironment(
@@ -199,11 +195,15 @@ export class AppServices extends Construct {
     );
 
     // Story Nodes Service -------------------------------------------------
-    this.storyNodesService = new NodejsServiceFunction(this, "StoryNodesServiceLambda", {
-      entry: path.join(__dirname, "../../../services/storyNodes/index.js"),  // Asegúrate de que este path sea correcto
-      timeout: Duration.seconds(10),
-      runtime: lambda.Runtime.NODEJS_16_X
-    });
+    this.storyNodesService = new NodejsServiceFunction(
+      this,
+      "StoryNodesServiceLambda",
+      {
+        entry: path.join(__dirname, "../../../services/storyNodes/index.js"), // Asegúrate de que este path sea correcto
+        timeout: Duration.seconds(10),
+        runtime: lambda.Runtime.NODEJS_16_X,
+      }
+    );
 
     props.storyNodesTable.grantReadWriteData(this.storyNodesService);
     this.storyNodesService.addEnvironment(
@@ -231,7 +231,6 @@ export class AppServices extends Construct {
       })
     );
 
-
     // Public Service ------------------------------------------------------
 
     this.publicService = new NodejsServiceFunction(
@@ -239,6 +238,7 @@ export class AppServices extends Construct {
       "PublicServiceLambda",
       {
         entry: path.join(__dirname, "../../../services/public/index.js"),
+        timeout: Duration.minutes(10),
       }
     );
 
@@ -273,6 +273,13 @@ export class AppServices extends Construct {
       new iam.PolicyStatement({
         resources: [props.userPool.userPoolArn],
         actions: ["cognito-idp:*"],
+      })
+    );
+
+    this.publicService.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["polly:SynthesizeSpeech"],
+        resources: ["*"], // Puedes restringir el recurso si conoces el ARN específico
       })
     );
   }

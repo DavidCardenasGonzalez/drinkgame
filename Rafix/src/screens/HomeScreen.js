@@ -59,7 +59,13 @@ function HomeScreen({ route, navigation }) {
           style={styles.button}
           onPress={() => navigation.navigate("Players")}
         >
-          <Text style={styles.buttonText}>Nuevo juego</Text>
+          <Text style={styles.buttonText}>Clásico</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("PlayersStory")}
+        >
+          <Text style={styles.buttonText}>Modo Historia</Text>
         </TouchableOpacity>
         {showLastGame && (
           <TouchableOpacity

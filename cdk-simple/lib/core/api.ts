@@ -163,7 +163,7 @@ export class ApplicationAPI extends Construct {
     );
 
     this.httpApi.addRoutes({
-      path: `/story-nodes/{proxy+}`,
+      path: `/storyNodes/{proxy+}`,
       methods: serviceMethods,
       integration: storyNodesServiceIntegration,
       authorizer,

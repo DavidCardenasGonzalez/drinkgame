@@ -81,7 +81,7 @@ function Profile() {
   }, [user, name, profileImageURL]);
 
   const handleImageChange = (event) => {
-    const newImage = event.target?.files?.[0];
+    const newImage = event.target.files[0];
     setProfileImageFile(newImage);
     setProfileImageURL(URL.createObjectURL(newImage));
   };

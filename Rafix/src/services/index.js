@@ -44,3 +44,8 @@ export const generateGame = async (body) => {
   const results = await axios.post(`${SERVICES_HOST}/generateGame`, body);
   return results.data;
 };
+
+export const generateStoryGame = async (body) => {
+  const results = await axios.post(`${SERVICES_HOST}/generateStoryGame`, body);
+  return results.data;
+};
