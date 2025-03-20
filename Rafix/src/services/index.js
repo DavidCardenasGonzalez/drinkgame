@@ -17,16 +17,13 @@ export const getAllCategories = async () => {
       const age = now - parseInt(storedTimestamp, 10);
 
       if (age < TWELVE_HOURS) {
-        // Si los datos no tienen más de 12 horas, devolverlos
         return JSON.parse(storedCategories);
       }
     }
 
-    // Si no hay datos o son viejos, hacer la llamada a la API
     const results = await axios.get(`${SERVICES_HOST}/categories/`);
     const categories = results.data;
 
-    // Almacenar los nuevos datos y su timestamp en AsyncStorage
     await AsyncStorage.setItem(
       CATEGORY_STORAGE_KEY,
       JSON.stringify(categories)

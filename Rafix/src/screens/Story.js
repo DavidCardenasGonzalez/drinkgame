@@ -20,13 +20,10 @@ import Loading from "../components/Loading";
 const Story = ({ navigation, route }) => {
   const { plot, playerDetails, playerList } = route.params;
   const [loading, setLoading] = useState(false);
-  // Por ahora se hardcodea el URL para probar el reproductor
-  const [audioUrl, setAudioUrl] = useState(
-    "https://bodazen-storageassetbuckete733f8f7-ox7i69yqwzfv.s3.us-west-2.amazonaws.com/history-audios/history-1739202827620.mp3?AWSAccessKeyId=ASIA4R6PMZTR2MWWQJY3&Expires=1739289228&Signature=wBFL%2B%2FIk7QCtbhmH%2FV%2BBI9rkIjc%3D&X-Amzn-Trace-Id=Root%3D1-67aa20fa-1a6a26931b46732a0d0e60f9%3BParent%3D3f6adc035b09be02%3BSampled%3D1%3BLineage%3D1%3A0271c073%3A0&x-amz-security-token=IQoJb3JpZ2luX2VjEKj%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJGMEQCIChuxGpIVQdGXjCUNSLqa%2F36k5vg2btjagb%2BL7nI4JWjAiAC1VQEWBrFPzeMDW9T3jwTUkDGOxSrZPmukGMTblKlQSrOAwjB%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDg2MzE4NjUwNDkzMSIMM0bHFzDuJs7S%2BkmpKqIDEc9AO8AUkwTnB8iZj1wetgeQNWhcd15gyuZDv8tHFrN74pVxDjOTpGuVw7q9PMrnisqYPZdnKidVzPUxKUYx34nH9U7gTgV1ee6lMLRAVikYIK6V%2BfpESx6M6StOum%2Bn5KYlefbEHcIsj7XvikGWOxQ%2B1N%2FEP03d9PivT6lfzA9z0klGVNAqCjYtoDQjEPXnnAso9xnCPkhEk%2F5xdElvsh%2FPD7KjUSANm2H8sz5RqKdVEwf%2FdRHUdGu0RGYA00qnWGU1iO7QK7USDrLESzdJsZgRVoplfUtpliGIBVXX2f9DRg5E43ju%2FtMTGicCvOxBZa4mtaTXB8vip%2BxlVkCvR%2Fjd%2BBO9D3apuR%2B4qm6MyeS%2F%2FkcwBcpJzMw1FvcSmaKiVMNuqvUNKtwXOoFLK2JZQtnBBmqCrhyULxFYJUmEfB9%2BU6I%2BYCKpgUY6CQ%2FdKewS1Oe%2FQ211dZpXeNqaDt7Zvt017sz1UdDBs6n29HMRMp79auypnt00zN9k63H9fO5sPqthqLgKZjfL%2FmXZMZQbAh%2FL6jrEHnyX%2FKyulWTGcil6gzD6wai9BjqfAeGggkqrtET0EhSgnZelExmmkz0FXeQDEEDOCKaCsAgthGar405lWm98CfVHRsJFR%2F74fd%2BCpvcebrKzLq7SxdX%2FcuPB6%2Fs4UJKfWsFiX3eqdKmsTvWdLmSj5YUdy1N0Gv8GOZSO3CHxrOquIfUoOo49O8tRMFUAw6yybey43SkFkRGlELKEyUKKTfGTUp5ETbbIM5RN7bANH5RTdiNfEA%3D%3D"
-  );
+  const [audioUrl, setAudioUrl] = useState("");
   const [sound, setSound] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  // Estado para almacenar el status del audio (posición actual y duración)
+  const [isLoadingSound, setIsLoadingSound] = useState(false);
   const [playbackStatus, setPlaybackStatus] = useState(null);
 
   useEffect(() => {
@@ -42,7 +39,7 @@ const Story = ({ navigation, route }) => {
 
   useEffect(() => {
     // Generamos la historia al iniciar el componente
-    // generateStory();
+    generateStory();
     return () => {
       // Al desmontar, si existe el sonido, lo descargamos de memoria
       if (sound) {
@@ -59,9 +56,7 @@ const Story = ({ navigation, route }) => {
         notes: playerDetails[index] || "",
       }));
       const data = { players, plot };
-      console.log("data", data);
       const response = await generateStoryGame(data);
-      console.log("response", response);
       if (response.audioUrl) {
         setAudioUrl(response.audioUrl);
       } else {
@@ -76,9 +71,16 @@ const Story = ({ navigation, route }) => {
 
   // Función para reproducir/pausar
   const handlePlayPause = async () => {
-    console.log("audioUrl", audioUrl);
     if (!sound) {
+      if (isLoadingSound) {
+        Alert.alert(
+          "Cargando audio",
+          "Por favor espera a que el audio termine de cargar."
+        );
+        return;
+      }
       try {
+        setIsLoadingSound(true);
         console.log("Cargando audio...");
         const { sound: newSound } = await Audio.Sound.createAsync(
           { uri: audioUrl },
@@ -87,10 +89,20 @@ const Story = ({ navigation, route }) => {
         );
         setSound(newSound);
         setIsPlaying(true);
+        setIsLoadingSound(false);
       } catch (error) {
         console.error("Error al reproducir el audio:", error);
+        setIsLoadingSound(false);
+        Alert.alert("Error", "No se pudo cargar el audio.");
       }
     } else {
+      if (playbackStatus && !playbackStatus.isLoaded) {
+        Alert.alert(
+          "Audio no cargado",
+          "El audio aún no está completamente cargado."
+        );
+        return;
+      }
       if (isPlaying) {
         await sound.pauseAsync();
         setIsPlaying(false);
@@ -152,7 +164,6 @@ const Story = ({ navigation, route }) => {
     }
   };
 
-  // Función para formatear milisegundos a minutos:segundos
   const formatTime = (millis) => {
     if (typeof millis !== "number" || isNaN(millis)) {
       return "0:00";
@@ -191,7 +202,7 @@ const Story = ({ navigation, route }) => {
             <Loading />
           ) : (
             <View style={styles.gameContainer}>
-              <Text style={styles.title}>Historia generada por IA: cada vez que escuches tu nombre, toma un trago.</Text>
+              <Text style={styles.title}>Historia generada por IA</Text>
               <View style={styles.playerContainer}>
                 {/* Barra de progreso */}
                 <Slider
@@ -228,69 +239,61 @@ const Story = ({ navigation, route }) => {
                     onPress={handleRestart}
                     style={styles.controlButton}
                   >
-                    <Text style={styles.controlButtonText}>
-                      <Ionicons
-                        name="play-skip-back-outline"
-                        size={24}
-                        color="white"
-                      />
-                    </Text>
+                    <Ionicons
+                      name="play-skip-back-outline"
+                      size={24}
+                      color="white"
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSkipBackward}
                     style={styles.controlButton}
                   >
-                    <Text style={styles.controlButtonText}>
-                      <Ionicons
-                        name="play-back-outline"
-                        size={24}
-                        color="white"
-                      />
-                    </Text>
+                    <Ionicons
+                      name="play-back-outline"
+                      size={24}
+                      color="white"
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handlePlayPause}
                     style={styles.controlButton}
+                    disabled={isLoadingSound}
                   >
-                    <Text style={styles.controlButtonText}>
-                      {isPlaying ? (
-                        <Ionicons
-                          name="pause-outline"
-                          size={24}
-                          color="white"
-                        />
-                      ) : (
-                        <Ionicons name="play-outline" size={24} color="white" />
-                      )}
-                    </Text>
+                    {isPlaying ? (
+                      <Ionicons name="pause-outline" size={24} color="white" />
+                    ) : (
+                      <Ionicons name="play-outline" size={24} color="white" />
+                    )}
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={handleSkipForward}
                     style={styles.controlButton}
                   >
-                    <Text style={styles.controlButtonText}>
-                      <Ionicons
-                        name="play-forward-outline"
-                        size={24}
-                        color="white"
-                      />
-                    </Text>
+                    <Ionicons
+                      name="play-forward-outline"
+                      size={24}
+                      color="white"
+                    />
                   </TouchableOpacity>
                 </View>
               </View>
               {/* Botones extra */}
               <View style={styles.extraButtonsContainer}>
-                {/* <TouchableOpacity style={styles.button} onPress={generateStory}>
-                  <Text style={styles.buttonText}>Volver al intentar</Text>
-                </TouchableOpacity> */}
                 <TouchableOpacity
                   style={styles.button}
                   onPress={handleDownloadAndShare}
                 >
                   <Text style={styles.buttonText}>Descargar y Compartir</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => navigation.navigate("Home")}
+                >
+                  <Text style={styles.buttonText}>Volver al Inicio</Text>
+                </TouchableOpacity>
               </View>
-              </View>
+            </View>
           )}
         </View>
       </ImageBackground>
@@ -312,9 +315,7 @@ const styles = StyleSheet.create({
   image: { opacity: 0.5, width: "100%", height: "100%" },
   container: {
     flex: 1,
-    // backgroundColor: "black",
     alignItems: "center",
-    // justifyContent: "center",
     padding: 20,
   },
   gameContainer: {
@@ -372,10 +373,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     borderWidth: 2,
     borderColor: "#FFF",
-  },
-  controlButtonText: {
-    color: "#FFF",
-    fontSize: 18,
   },
   extraButtonsContainer: {
     width: "100%",

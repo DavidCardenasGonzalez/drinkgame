@@ -20,8 +20,6 @@ const { width } = Dimensions.get("window");
 const CategoryList = ({ route, navigation }) => {
   const [categoryList, setCategoryList] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState({});
-  const [isDrinkingFilterActive, setDrinkingFilterActive] = useState(false);
-  const [isTalkingFilterActive, setTalkingFilterActive] = useState(false);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
 
   const showPaywall = async () => {
@@ -50,7 +48,6 @@ const CategoryList = ({ route, navigation }) => {
 
   useEffect(() => {
     getAllCategories().then(function (res) {
-      console.log(res);
       setCategoryList(res.sort((a, b) => a.order - b.order));
     });
   }, [route.params.playerList]);
@@ -59,8 +56,8 @@ const CategoryList = ({ route, navigation }) => {
     async function fetchData() {
       try {
         const customerInfo = await Purchases.getCustomerInfo();
-        console.log("customerInfoooo", customerInfo.entitlements.active);
         setIsPremiumUser(!!customerInfo.entitlements.active["Pro"]);
+        // setIsPremiumUser(true);
       } catch (e) {
         console.log(
           "error",
@@ -76,10 +73,10 @@ const CategoryList = ({ route, navigation }) => {
   }, []);
 
   const handleCategoryPress = async (category) => {
-    // if (category.isPremium && !isPremiumUser) {
-    //   await showPaywall();
-    //   return;
-    // }
+    if (category.isPremium && !isPremiumUser) {
+      await showPaywall();
+      return;
+    }
     setSelectedCategories((prevSelectedCategories) => {
       const newSelectedCategories = { ...prevSelectedCategories };
       if (newSelectedCategories[category.name]) {
@@ -92,20 +89,8 @@ const CategoryList = ({ route, navigation }) => {
   };
 
   const filteredCategoryList = categoryList.filter((category) => {
-    if (!isDrinkingFilterActive && !isTalkingFilterActive) return true;
-    if (isDrinkingFilterActive && isTalkingFilterActive) return true;
-    if (isDrinkingFilterActive) return category.haveAlcohol;
-    if (isTalkingFilterActive) return !category.haveAlcohol;
-    return false;
+    return true;
   });
-
-  const toggleDrinkingFilter = () => {
-    setDrinkingFilterActive((prevState) => !prevState);
-  };
-
-  const toggleTalkingFilter = () => {
-    setTalkingFilterActive((prevState) => !prevState);
-  };
 
   const renderCategory = ({ item }) => {
     const isSelected = selectedCategories[item.name];
@@ -164,43 +149,6 @@ const CategoryList = ({ route, navigation }) => {
             />
             <TouchableOpacity></TouchableOpacity>
           </View>
-          <View style={styles.filtersContainer}>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                isDrinkingFilterActive && styles.filterButtonSelected,
-              ]}
-              onPress={toggleDrinkingFilter}
-            >
-              <Ionicons name="beer-outline" size={24} color="white" />
-              <Text
-                style={[
-                  styles.filterButtonText,
-                  isDrinkingFilterActive && styles.filterButtonTextSelected,
-                ]}
-              >
-                Beber
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                isTalkingFilterActive && styles.filterButtonSelected,
-              ]}
-              onPress={toggleTalkingFilter}
-            >
-              <Ionicons name="happy-outline" size={24} color="white" />
-              <Text
-                style={[
-                  styles.filterButtonText,
-                  isTalkingFilterActive && styles.filterButtonTextSelected,
-                ]}
-              >
-                Platicadito
-              </Text>
-            </TouchableOpacity>
-          </View>
-
           <FlatList
             ListHeaderComponent={() => (
               <View>
@@ -280,6 +228,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFF",
     marginBottom: 20,
+    marginTop: 10,
     textAlign: "center",
   },
   categoriesContainer: {
@@ -352,36 +301,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {
     opacity: 0.5,
-  },
-  // Estilos para los filtros
-  filtersContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-    marginBottom: 20,
-  },
-  filterButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#3b3939",
-    padding: 10,
-    borderRadius: 20,
-    width: "45%",
-    borderColor: "#2b2626",
-    borderWidth: 2,
-  },
-  filterButtonSelected: {
-    backgroundColor: "#ccb5af",
-    borderColor: "#a8553b",
-  },
-  filterButtonText: {
-    color: "#FFF",
-    fontSize: 16,
-    marginLeft: 10,
-  },
-  filterButtonTextSelected: {
-    color: "#a8553b",
   },
 });
 

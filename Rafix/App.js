@@ -10,6 +10,7 @@ import StoryConfig from "./src/screens/StoryConfig";
 import Story from "./src/screens/Story";
 import Game from "./src/screens/Game";
 import Info from "./src/screens/Info";
+import Settings from "./src/screens/Settings";
 import { useEffect } from "react";
 
 const Stack = createNativeStackNavigator();
@@ -30,22 +31,7 @@ function App() {
     }
     async function fetchData() {
       const customerInfo = await Purchases.getCustomerInfo();
-      console.log("customerInfoooo", customerInfo);
-      try {
-        // const entitlements = await Purchases.getEntitlements();
-        // console.log("entitlements", entitlements);
-        const offerings = await Purchases.getOfferings();
-        console.log("nuevo offerings", offerings);
-      } catch (e) {
-        console.log(
-          "error",
-          e.code,
-          e.message,
-          e.userCancelled,
-          e.backendCode,
-          e.details
-        );
-      }
+      console.log("customerInfo", customerInfo);
     }
     fetchData();
   }, []);
@@ -91,6 +77,11 @@ function App() {
         <Stack.Screen
           name="Info"
           component={Info}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={Settings}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

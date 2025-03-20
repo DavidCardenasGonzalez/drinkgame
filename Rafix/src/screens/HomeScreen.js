@@ -10,37 +10,36 @@ import {
   Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Ionicons } from "@expo/vector-icons";
 import { getAllCategories } from "../../src/services";
 
 function HomeScreen({ route, navigation }) {
   const [showLastGame, setShowLastGame] = useState(false);
+
   useEffect(() => {
     getAllCategories();
     async function fetchData() {
       const lastGame = await AsyncStorage.getItem("lastGame");
-      console.log(lastGame);
-      if (lastGame) {
-        setShowLastGame(true);
-      } else {
-        setShowLastGame(false);
-      }
+      setShowLastGame(!!lastGame);
     }
     fetchData();
     console.log("HomeScreen mounted");
   }, [route.params]);
 
   const openInstagram = () => {
-    const instagramUrl = 'https://www.instagram.com/rafix.app';
-  
+    const instagramUrl = "https://www.instagram.com/rafix.app";
+
     Linking.canOpenURL(instagramUrl)
       .then((supported) => {
         if (supported) {
           Linking.openURL(instagramUrl);
         } else {
-          Alert.alert('Error', 'No se pudo abrir Instagram.');
+          Alert.alert("Error", "No se pudo abrir Instagram.");
         }
       })
-      .catch((err) => console.error('Error al intentar abrir Instagram:', err));
+      .catch((err) =>
+        console.error("Error al intentar abrir Instagram:", err)
+      );
   };
 
   return (
@@ -49,6 +48,13 @@ function HomeScreen({ route, navigation }) {
       style={styles.background}
       imageStyle={styles.image}
     >
+      <TouchableOpacity
+        style={styles.settingsIcon}
+        onPress={() => navigation.navigate("Settings")}
+      >
+        <Ionicons name="settings-outline" size={30} color="#FFF" />
+      </TouchableOpacity>
+
       <View style={styles.container}>
         <Image source={require("../../assets/RAFIX.png")} style={styles.logo} />
         <Image
@@ -72,14 +78,18 @@ function HomeScreen({ route, navigation }) {
             style={styles.button}
             onPress={() => navigation.navigate("Game")}
           >
-            <Text style={styles.buttonText}>Continuar juego anterior</Text>
+            <Text style={styles.buttonText}>
+              Continuar juego anterior
+            </Text>
           </TouchableOpacity>
         )}
         <Text style={styles.footerText}>
           Al hacer clic en "Nuevo juego" o "Continuar juego anterior", aceptas
           <Text
             style={styles.link}
-            onPress={() => navigation.navigate("Info", { type: "terms" })}
+            onPress={() =>
+              navigation.navigate("Info", { type: "terms" })
+            }
           >
             {" "}
             Términos de Servicio
@@ -87,7 +97,9 @@ function HomeScreen({ route, navigation }) {
           y
           <Text
             style={styles.link}
-            onPress={() => navigation.navigate("Info", { type: "privacy" })}
+            onPress={() =>
+              navigation.navigate("Info", { type: "privacy" })
+            }
           >
             {" "}
             Política de Privacidad
@@ -148,6 +160,13 @@ const styles = StyleSheet.create({
     color: "#FFF",
     marginTop: 10,
     textDecorationLine: "underline",
+  },
+  settingsIcon: {
+    position: "absolute",
+    top: 50,
+    right: 10,
+    zIndex: 1,
+    padding: 5,
   },
 });
 
