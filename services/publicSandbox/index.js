@@ -33,13 +33,13 @@ const getAllCategories = async (request, response) => {
   console.log("getAllCategories");
   const params = {
     TableName: categoryTableName,
-    FilterExpression: "#category_status = :status",
-    ExpressionAttributeValues: {
-      ":status": "active",
-    },
-    ExpressionAttributeNames: {
-      "#category_status": "status",
-    },
+    // FilterExpression: "#category_status = :status",
+    // ExpressionAttributeValues: {
+    //   ":status": "active",
+    // },
+    // ExpressionAttributeNames: {
+    //   "#category_status": "status",
+    // },
   };
 
   try {
@@ -217,15 +217,15 @@ const generateStoryGame = async (request, response) => {
 };
 
 const router = createRouter(RouterType.HTTP_API_V2);
-router.add(Matcher.HttpApiV2("GET", "/public/categories/"), getAllCategories);
+router.add(Matcher.HttpApiV2("GET", "/publicSandbox/categories/"), getAllCategories);
 router.add(
-  Matcher.HttpApiV2("POST", "/public/generateGame"),
+  Matcher.HttpApiV2("POST", "/publicSandbox/generateGame"),
   generateCategoryGame
 );
 
 // Aquí agregamos la nueva ruta para generar la historia
 router.add(
-  Matcher.HttpApiV2("POST", "/public/generateStoryGame"),
+  Matcher.HttpApiV2("POST", "/publicSandbox/generateStoryGame"),
   generateStoryGame
 );
 

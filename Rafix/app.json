@@ -2,7 +2,7 @@
   "expo": {
     "name": "Rafix",
     "slug": "Rafix",
-    "version": "1.4.0",
+    "version": "1.4.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -31,7 +31,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cardi7.Rafix",
-      "buildNumber": "1.4.0"
+      "buildNumber": "1.4.2"
     },
     "android": {
       "adaptiveIcon": {
@@ -39,7 +39,7 @@
         "backgroundColor": "#803cff"
       },
       "package": "com.cardi7.Rafix",
-      "versionCode": 7
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/favicon.png"

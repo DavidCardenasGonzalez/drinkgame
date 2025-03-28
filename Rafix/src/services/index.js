@@ -2,7 +2,7 @@ import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SERVICES_HOST =
-  "https://m3xrpgk8ld.execute-api.us-west-2.amazonaws.com/public";
+  "https://m3xrpgk8ld.execute-api.us-west-2.amazonaws.com/publicSandbox";
 
 export const getAllCategories = async () => {
   try {

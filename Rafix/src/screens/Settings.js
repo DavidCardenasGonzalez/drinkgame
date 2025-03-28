@@ -67,17 +67,8 @@ function Settings({ route, navigation }) {
             offerings.all["All acess"].availablePackages
           );
           if (proEntitlement) {
-            const proPackage = offerings.all[
-              "All acess"
-            ].availablePackages.find((pkg) => {
-              return (
-                pkg.product.identifier === proEntitlement.productIdentifier
-              );
-            });
-            console.log("Pro package:", proPackage);
-            console.log(
-              "proEntitlement.productIdentifier:",
-              proEntitlement.productIdentifier
+            const proPackage = offerings.all["All acess"].availablePackages.find(
+              (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
             );
             if (proPackage) {
               setProPackageInfo(proPackage);
@@ -111,6 +102,14 @@ function Settings({ route, navigation }) {
           const proEntitlement = customerInfo.entitlements.active["Pro"];
           setIsPro(!!proEntitlement);
           setProInfo(proEntitlement);
+          if (proEntitlement) {
+            const proPackage = availablePackages.find(
+              (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
+            );
+            if (proPackage) {
+              setProPackageInfo(proPackage);
+            }
+          }
           break;
         }
         case PAYWALL_RESULT.RESTORED: {
@@ -118,6 +117,14 @@ function Settings({ route, navigation }) {
           const proEntitlement = customerInfo.entitlements.active["Pro"];
           setIsPro(!!proEntitlement);
           setProInfo(proEntitlement);
+          if (proEntitlement) {
+            const proPackage = availablePackages.find(
+              (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
+            );
+            if (proPackage) {
+              setProPackageInfo(proPackage);
+            }
+          }
           break;
         }
         default:
@@ -125,6 +132,28 @@ function Settings({ route, navigation }) {
       }
     } catch (error) {
       console.log("Error mostrando el paywall:", error);
+    }
+  };
+
+  // Función para restaurar compras
+  const restorePurchases = async () => {
+    try {
+      const customerInfo = await Purchases.restorePurchases();
+      const proEntitlement = customerInfo.entitlements.active["Pro"];
+      setIsPro(!!proEntitlement);
+      setProInfo(proEntitlement);
+      if (proEntitlement) {
+        const proPackage = availablePackages.find(
+          (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
+        );
+        if (proPackage) {
+          setProPackageInfo(proPackage);
+        }
+      }
+      Alert.alert("Restaurar Compras", "Las compras se han restaurado exitosamente.");
+    } catch (error) {
+      console.log("Error restaurando compras:", error);
+      Alert.alert("Error", "No se pudieron restaurar las compras, inténtalo de nuevo.");
     }
   };
 
@@ -161,13 +190,17 @@ function Settings({ route, navigation }) {
       </View>
       <ScrollView contentContainerStyle={styles.container}>
         {isPro ? (
-          <Text style={{
-            color: "#FFD700",
-            fontSize: 30,
-            fontWeight: "bold",
-            textAlign: "center",
-            marginBottom: 20,
-          }}>Suscripción Premium</Text>
+          <Text
+            style={{
+              color: "#FFD700",
+              fontSize: 30,
+              fontWeight: "bold",
+              textAlign: "center",
+              marginBottom: 20,
+            }}
+          >
+            Suscripción Premium
+          </Text>
         ) : (
           <TouchableOpacity onPress={showPaywall}>
             <View style={styles.premiumBanner}>
@@ -196,35 +229,18 @@ function Settings({ route, navigation }) {
               Información de Suscripción Pro
             </Text>
             <Text style={styles.subscriptionDetail}>
-              Renovación Automatica:{" "}
+              Renovación Automática:{" "}
               {new Date(proInfo.expirationDate).toLocaleDateString()}
             </Text>
             <Text style={styles.subscriptionDetail}>
               Periodo: {getProductPeriodSpanish(proPackageInfo.packageType)}
             </Text>
             <Text style={styles.subscriptionDetail}>
-              Precio: {proPackageInfo.product.priceString}
-              {" " + proPackageInfo.product.currencyCode}
+              Precio: {proPackageInfo.product.priceString}{" "}
+              {proPackageInfo.product.currencyCode}
             </Text>
           </View>
         )}
-
-        {/* {availablePackages.length > 0 && (
-          <View style={styles.offeringsContainer}>
-            <Text style={styles.offeringsTitle}>Ofertas Disponibles</Text>
-            {availablePackages.map((pkg) => (
-              <View key={pkg.identifier} style={styles.offeringItem}>
-                <Text style={styles.offeringTitle}>{pkg.product.title}</Text>
-                <Text style={styles.offeringDetail}>
-                  Tipo: {pkg.packageType}
-                </Text>
-                <Text style={styles.offeringDetail}>
-                  Precio: {pkg.product.priceString} ({pkg.product.currencyCode})
-                </Text>
-              </View>
-            ))}
-          </View>
-        )} */}
 
         <ListItem
           onPress={() =>
@@ -248,6 +264,11 @@ function Settings({ route, navigation }) {
           onPress={openInstagram}
           iconName="chatbubble-ellipses-outline"
           text="Contáctanos"
+        />
+        <ListItem
+          onPress={restorePurchases}
+          iconName="refresh"
+          text="Restaurar Compras"
         />
       </ScrollView>
     </ImageBackground>

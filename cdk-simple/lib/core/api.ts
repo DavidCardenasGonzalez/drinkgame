@@ -18,6 +18,7 @@ interface ApplicationAPIProps {
   cardsService: lambda.IFunction;
   usersService: lambda.IFunction;
   publicService: lambda.IFunction;
+  publicSandboxService: lambda.IFunction;
   storiesService: lambda.IFunction;
   storyNodesService: lambda.IFunction;
   userPool: cognito.IUserPool;
@@ -143,8 +144,22 @@ export class ApplicationAPI extends Construct {
       authorizer: new apigv2.HttpNoneAuthorizer(),
     });
 
-     // Stories Service ------------------------------------------------------
-     const storiesServiceIntegration = new HttpLambdaIntegration(
+    // Public Sandbox Service ------------------------------------------------------
+
+    const publicSandboxServiceIntegration = new HttpLambdaIntegration(
+      "PublicSandboxIntegration",
+      props.publicSandboxService
+    );
+
+    this.httpApi.addRoutes({
+      path: `/publicSandbox/{proxy+}`,
+      methods: serviceMethods,
+      integration: publicSandboxServiceIntegration,
+      authorizer: new apigv2.HttpNoneAuthorizer(),
+    });
+
+    // Stories Service ------------------------------------------------------
+    const storiesServiceIntegration = new HttpLambdaIntegration(
       "StoriesIntegration",
       props.storiesService
     );

@@ -43,6 +43,7 @@ export class BodazenInfrastructureMain extends Stack {
       userPool: this.auth.userPool,
       userPoolClient: this.auth.userPoolClient,
       publicService: services.publicService,
+      publicSandboxService: services.publicSandboxService,
     });
 
     const webapp = new WebApp(this, 'WebApp', {

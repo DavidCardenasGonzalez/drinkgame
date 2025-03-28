@@ -37,6 +37,8 @@ export class AppServices extends Construct {
 
   public readonly publicService: ln.NodejsFunction;
 
+  public readonly publicSandboxService: ln.NodejsFunction;
+
   public readonly storiesService: ln.NodejsFunction;
 
   public readonly storyNodesService: ln.NodejsFunction;
@@ -279,8 +281,61 @@ export class AppServices extends Construct {
     this.publicService.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ["polly:SynthesizeSpeech"],
-        resources: ["*"], // Puedes restringir el recurso si conoces el ARN específico
+        resources: ["*"], 
       })
     );
+
+      // Public Sandbox Service ------------------------------------------------------
+
+      this.publicSandboxService = new NodejsServiceFunction(
+        this,
+        "PublicSandboxServiceLambda",
+        {
+          entry: path.join(__dirname, "../../../services/publicSandbox/index.js"),
+          timeout: Duration.minutes(10),
+          runtime: lambda.Runtime.NODEJS_16_X,
+        }
+      );
+  
+      props.categoriesTable.grantReadWriteData(this.publicSandboxService);
+      props.cardsTable.grantReadWriteData(this.publicSandboxService);
+      props.storiesTable.grantReadWriteData(this.publicSandboxService);
+      props.storyNodesTable.grantReadWriteData(this.publicSandboxService);
+      this.publicSandboxService.addEnvironment(
+        "ASSET_BUCKET",
+        props.assetBucket.bucketName
+      );
+      this.publicSandboxService.addEnvironment(
+        "CATEGORIES_DB_TABLE",
+        props.categoriesTable.tableName
+      );
+      this.publicSandboxService.addEnvironment(
+        "CARDS_DB_TABLE",
+        props.cardsTable.tableName
+      );
+      this.publicSandboxService.addEnvironment(
+        "STORIES_DB_TABLE",
+        props.storiesTable.tableName
+      );
+      this.publicSandboxService.addEnvironment(
+        "STORY_NODES_DB_TABLE",
+        props.storyNodesTable.tableName
+      );
+  
+      props.assetBucket.grantReadWrite(this.publicSandboxService);
+  
+      this.publicSandboxService.addToRolePolicy(
+        new iam.PolicyStatement({
+          resources: [props.userPool.userPoolArn],
+          actions: ["cognito-idp:*"],
+        })
+      );
+  
+      this.publicSandboxService.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ["polly:SynthesizeSpeech"],
+          resources: ["*"], 
+        })
+      );
   }
 }

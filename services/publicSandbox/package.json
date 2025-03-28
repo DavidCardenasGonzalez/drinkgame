@@ -1,0 +1,12 @@
+{
+  "name": "@ps-serverless/public-sandbox-service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "docxtemplater": "^3.32.4",
+    "lambda-micro": "^1.0.0",
+    "openai": "^3.2.1",
+    "pizzip": "^3.1.3"
+  }
+}
