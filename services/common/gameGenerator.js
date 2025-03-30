@@ -1,7 +1,9 @@
 export const generateGame = (cardsArray, members) => {
   const selectedCards = distributeObjects(cardsArray, 100);
   const alternativeCards = [];
-  const gameCards = selectedCards.map((card, index) => {
+  const gameCards =selectedCards
+    .filter(card => !card.minPlayers || card.minPlayers <= members.length)
+    .map((card, index) => {
     let displayText = card.text;
     let alternativeCardDisplayText = card.text2;
     if (card.text.includes("{{player}}")) {
@@ -17,23 +19,38 @@ export const generateGame = (cardsArray, members) => {
           replaceResponse.playerName
         );
       }
-    }
-
-    if (card.text.includes("{{player2}}")) {
-      // Reemplazar {{player}} con el nombre de un jugador de género femenino aleatorio
-      let replaceResponse = replacePlaceholderWithPlayerName(
-        displayText,
-        members,
-        "{{player2}}"
-      );
-      displayText = replaceResponse.text;
-      if (alternativeCardDisplayText) {
-        alternativeCardDisplayText = alternativeCardDisplayText.replace(
-          "{{player2}}",
-          replaceResponse.playerName
+      if (card.text.includes("{{player2}}")) {
+        // Reemplazar {{player}} con el nombre de un jugador de género femenino aleatorio
+        let replaceResponse = replacePlaceholderWithPlayerName(
+          displayText,
+          members,
+          "{{player2}}"
         );
+        displayText = replaceResponse.text;
+        if (alternativeCardDisplayText) {
+          alternativeCardDisplayText = alternativeCardDisplayText.replace(
+            "{{player2}}",
+            replaceResponse.playerName
+          );
+        }
+        if (card.text.includes("{{player3}}")) {
+          // Reemplazar {{player}} con el nombre de un jugador de género femenino aleatorio
+          let replaceResponse = replacePlaceholderWithPlayerName(
+            displayText,
+            members,
+            "{{player3}}"
+          );
+          displayText = replaceResponse.text;
+          if (alternativeCardDisplayText) {
+            alternativeCardDisplayText = alternativeCardDisplayText.replace(
+              "{{player3}}",
+              replaceResponse.playerName
+            );
+          }
+        }
       }
     }
+
 
     if (card.type === "question" || card.type === "virus") {
       const secondCard = {

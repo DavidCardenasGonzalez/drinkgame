@@ -72,6 +72,8 @@ function CardCreate() {
   const [duration, setDuration] = useState(1);
   const [timeout, setTimeout] = useState(0);
   const [passcode, setPasscode] = useState('');
+  const [tiktokURL, setTiktokURL] = useState('');
+  const [minPlayers, setMinPlayers] = useState(1);
   const [secondaryText, setSecondaryText] = useState('');
   const [info, setInfo] = useState('');
   const [status, setStatus] = useState('active');
@@ -126,6 +128,11 @@ function CardCreate() {
       return;
     }
 
+    if (type === 'tiktok' && (!tiktokURL || !minPlayers)) {
+      setIsValid(false);
+      return;
+    }
+
     if (type === 'roulette' && !secondaryText) {
       setIsValid(false);
       return;
@@ -136,7 +143,8 @@ function CardCreate() {
       return;
     }
     setIsValid(true);
-  }, [text, categoryId, type, text2, duration, status, timeout, passcode, secondaryText]);
+  }, [text, categoryId, type, text2, duration, status,
+    timeout, passcode, tiktokURL, secondaryText, minPlayers]);
 
   useEffect(() => {
     (async () => {
@@ -155,6 +163,8 @@ function CardCreate() {
       setStatus(data.status);
       setInfo(data.info);
       setPasscode(data.passcode);
+      setTiktokURL(data.tiktokURL);
+      setMinPlayers(data.minPlayers);
       setSecondaryText(data.secondaryText);
       if (data.image1URL) {
         setImage1URL(data.image1URL);
@@ -177,6 +187,8 @@ function CardCreate() {
         duration,
         timeout,
         passcode,
+        tiktokURL,
+        minPlayers,
         secondaryText,
         status,
         info,
@@ -351,6 +363,7 @@ function CardCreate() {
                       <MenuItem value="virus">Virus</MenuItem>
                       <MenuItem value="timeout">Contra reloj</MenuItem>
                       <MenuItem value="passcode">Palabra clave</MenuItem>
+                      <MenuItem value="tiktok">Tiktok</MenuItem>
                       <MenuItem value="roulette">Ruleta</MenuItem>
                     </Select>
                   </FormControl>
@@ -417,6 +430,33 @@ function CardCreate() {
                       disabled={submitting}
                       fullWidth
                     />
+                  )}
+
+                  {type === 'tiktok' && (
+                    <>
+                      <TextField
+                        id="tiktokURL"
+                        className={classes.input}
+                        label="URL de Tiktok"
+                        value={tiktokURL}
+                        onChange={(e) => setTiktokURL(e.target.value)}
+                        required={type === 'tiktok'}
+                        disabled={submitting}
+                        fullWidth
+                      />
+                      <TextField
+                        id="minPlayers"
+                        type="number"
+                        className={classes.input}
+                        label="Mínimo Número de jugadores"
+                        value={minPlayers}
+                        onChange={(e) => setMinPlayers(e.target.value)}
+                        required={type === 'tiktok'}
+                        disabled={submitting}
+                        fullWidth
+                      />
+                    </>
+
                   )}
 
                   {type === 'roulette' && (

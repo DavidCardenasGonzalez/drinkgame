@@ -84,8 +84,8 @@ function Menu(props) {
 
   const fetchData = async () => {
     const data = await getAllCategories();
-    const cats = data.sort((a, b) => a.order - b.order)
-      .filter((category) => category.status === 'active');
+    const cats = data.sort((a, b) => a.order - b.order);
+    // .filter((category) => category.status === 'active');
     setCategories(cats);
     const storiesData = await getAllStories();
     const storiesSorted = storiesData.sort((a, b) => a.order - b.order)

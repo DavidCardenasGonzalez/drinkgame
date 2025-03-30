@@ -18,6 +18,7 @@ import Timer from "../components/Timer";
 import Passcode from "../components/Passcode";
 import Roulette from "../components/Roulette";
 import Loading from "../components/Loading";
+import TikTokEmbed from "../components/TikTokEmbed";
 import cardsInfo from "../util/cardsInfo.json";
 
 const Game = ({ route, navigation }) => {
@@ -221,6 +222,7 @@ const Game = ({ route, navigation }) => {
                     style={{
                       ...styles.cardText,
                       fontSize:
+                        !cards[currentCard].tiktokURL &&
                         !cards[currentCard].imageURL &&
                         cards[currentCard].displayText &&
                         cards[currentCard].displayText.length < 200
@@ -246,6 +248,9 @@ const Game = ({ route, navigation }) => {
                       timeout={cards[currentCard].timeout}
                       cardId={cards[currentCard].displayText}
                     />
+                  )}
+                  {cards[currentCard].type === "tiktok" && (
+                    <TikTokEmbed url={cards[currentCard].tiktokURL} />
                   )}
                   {cards[currentCard].type === "passcode" && (
                     <Passcode
@@ -320,9 +325,7 @@ const Game = ({ route, navigation }) => {
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.modalBackground}>
-            {renderModalContent()}
-          </View>
+          <View style={styles.modalBackground}>{renderModalContent()}</View>
         </Modal>
       </ImageBackground>
     </KeyboardAvoidingView>
