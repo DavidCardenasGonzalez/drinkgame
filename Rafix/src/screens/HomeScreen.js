@@ -73,6 +73,12 @@ function HomeScreen({ route, navigation }) {
         >
           <Text style={styles.buttonText}>Modo Historia</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("Script")}
+        >
+          <Text style={styles.buttonText}>Modo Actuación</Text>
+        </TouchableOpacity>
         {showLastGame && (
           <TouchableOpacity
             style={styles.button}

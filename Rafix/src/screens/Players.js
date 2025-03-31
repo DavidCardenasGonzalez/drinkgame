@@ -60,12 +60,16 @@ const PlayerList = ({ navigation, route }) => {
       navigation.navigate("StoryConfig", {
         playerList,
       });
+    } else if (route && route.name === "PlayersScript") {
+      navigation.navigate("ScriptConfig", {
+        playerList,
+      });
     } else {
       // Opcional: una ruta por defecto o mensaje de error
       console.warn("Ruta no reconocida:", route?.name);
     }
   };
-
+  
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}

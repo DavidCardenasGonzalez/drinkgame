@@ -27,6 +27,7 @@ export class BodazenInfrastructureMain extends Stack {
       cardsTable: this.database.cardsTable,
       storiesTable: this.database.storiesTable,
       storyNodesTable: this.database.storyNodesTable,
+      scriptTable: this.database.scriptTable,
       uploadBucket: this.storage.uploadBucket,
       assetBucket: this.storage.assetBucket,
       userPool: this.auth.userPool,

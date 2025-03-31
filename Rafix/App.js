@@ -8,6 +8,8 @@ import Players from "./src/screens/Players";
 import Categories from "./src/screens/Categories";
 import StoryConfig from "./src/screens/StoryConfig";
 import Story from "./src/screens/Story";
+import ScriptReading from "./src/screens/ScriptReading";
+import Script from "./src/screens/Script";
 import Game from "./src/screens/Game";
 import Info from "./src/screens/Info";
 import Settings from "./src/screens/Settings";
@@ -55,6 +57,21 @@ function App() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="PlayersScript"
+          component={Players}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Script"
+          component={Script}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ScriptConfig"
+          component={StoryConfig}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="StoryConfig"
           component={StoryConfig}
           options={{ headerShown: false }}
@@ -62,6 +79,11 @@ function App() {
         <Stack.Screen
           name="Story"
           component={Story}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ScriptReading"
+          component={ScriptReading}
           options={{ headerShown: false }}
         />
         <Stack.Screen

@@ -16,8 +16,9 @@ interface AppServicesProps {
   employeeTable: dynamodb.ITable;
   categoriesTable: dynamodb.ITable;
   cardsTable: dynamodb.ITable;
-  storiesTable: dynamodb.ITable; // Nueva tabla
-  storyNodesTable: dynamodb.ITable; // Nueva tabla
+  storiesTable: dynamodb.ITable;
+  storyNodesTable: dynamodb.ITable;
+  scriptTable: dynamodb.ITable;
   uploadBucket: s3.IBucket;
   assetBucket: s3.IBucket;
   userPool: cognito.IUserPool;
@@ -248,6 +249,7 @@ export class AppServices extends Construct {
     props.cardsTable.grantReadWriteData(this.publicService);
     props.storiesTable.grantReadWriteData(this.publicService);
     props.storyNodesTable.grantReadWriteData(this.publicService);
+    props.scriptTable.grantReadWriteData(this.publicService);
     this.publicService.addEnvironment(
       "ASSET_BUCKET",
       props.assetBucket.bucketName
@@ -267,6 +269,11 @@ export class AppServices extends Construct {
     this.publicService.addEnvironment(
       "STORY_NODES_DB_TABLE",
       props.storyNodesTable.tableName
+    );
+
+    this.publicService.addEnvironment(
+      "SCRIPTS_DB_TABLE",
+      props.scriptTable.tableName
     );
 
     props.assetBucket.grantReadWrite(this.publicService);
@@ -301,6 +308,8 @@ export class AppServices extends Construct {
       props.cardsTable.grantReadWriteData(this.publicSandboxService);
       props.storiesTable.grantReadWriteData(this.publicSandboxService);
       props.storyNodesTable.grantReadWriteData(this.publicSandboxService);
+      props.scriptTable.grantReadWriteData(this.publicSandboxService);
+
       this.publicSandboxService.addEnvironment(
         "ASSET_BUCKET",
         props.assetBucket.bucketName
@@ -320,6 +329,11 @@ export class AppServices extends Construct {
       this.publicSandboxService.addEnvironment(
         "STORY_NODES_DB_TABLE",
         props.storyNodesTable.tableName
+      );
+
+      this.publicSandboxService.addEnvironment(
+        "SCRIPTS_DB_TABLE",
+        props.scriptTable.tableName
       );
   
       props.assetBucket.grantReadWrite(this.publicSandboxService);

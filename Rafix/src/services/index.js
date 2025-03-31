@@ -46,3 +46,14 @@ export const generateStoryGame = async (body) => {
   const results = await axios.post(`${SERVICES_HOST}/generateStoryGame`, body);
   return results.data;
 };
+
+export const getScript = async ({ code }) => {
+  console.log("getScript code", code);
+  const results = await axios.get(`${SERVICES_HOST}/script/${code}`);
+  return results.data;
+}
+
+export const generateScript = async (body) => {
+  const results = await axios.post(`${SERVICES_HOST}/generateScript`, body);
+  return results.data;
+};

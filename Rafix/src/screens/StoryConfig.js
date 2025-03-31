@@ -13,11 +13,14 @@ import {
   SafeAreaView,
   Platform,
   Alert,
+  Modal,
+  ScrollView,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import Purchases from "react-native-purchases";
 import RevenueCatUI, { PAYWALL_RESULT } from "react-native-purchases-ui";
+import categorias from "../util/categorias_cine.json";
 
 const StoryConfig = ({ navigation, route }) => {
   const { height } = useWindowDimensions();
@@ -27,6 +30,8 @@ const StoryConfig = ({ navigation, route }) => {
   const [playerDetails, setPlayerDetails] = useState([]);
   const [isPro, setIsPro] = useState(true);
   const [tokens, setTokens] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState(categorias[0] || "");
+  const [modalVisible, setModalVisible] = useState(false);
 
   const showPaywall = async () => {
     try {
@@ -82,24 +87,20 @@ const StoryConfig = ({ navigation, route }) => {
 
   // Función para actualizar el contador de tokens (vidas)
   const updateTokenCount = async () => {
-    // Recuperar el historial de generaciones almacenado en AsyncStorage
     const historyRaw = await AsyncStorage.getItem("generationHistory");
     let generationHistory = historyRaw ? JSON.parse(historyRaw) : [];
     const now = new Date();
     const twentyFourHours = 24 * 60 * 60 * 1000;
 
-    // Filtrar las generaciones que sean de las últimas 24 horas
     generationHistory = generationHistory.filter((timestamp) => {
       return now - new Date(timestamp) < twentyFourHours;
     });
 
-    // Actualizar AsyncStorage con el historial filtrado
     await AsyncStorage.setItem(
       "generationHistory",
       JSON.stringify(generationHistory)
     );
 
-    // Definir el máximo de tokens según si es Pro o no
     const maxTokens = isPro ? 10 : 3;
     const usedTokens = generationHistory.length;
     const availableTokens = Math.max(maxTokens - usedTokens, 0);
@@ -126,7 +127,6 @@ const StoryConfig = ({ navigation, route }) => {
       return;
     }
 
-    // Registrar la fecha/hora actual de la generación
     const now = new Date().toISOString();
     const historyRaw = await AsyncStorage.getItem("generationHistory");
     let generationHistory = historyRaw ? JSON.parse(historyRaw) : [];
@@ -136,10 +136,60 @@ const StoryConfig = ({ navigation, route }) => {
       JSON.stringify(generationHistory)
     );
 
-    // Actualizar el contador de tokens y navegar a la siguiente pantalla
     await updateTokenCount();
-    navigation.navigate("Story", { plot, playerDetails, playerList });
+    if (route && route.name === "StoryConfig") {
+      navigation.navigate("Story", {
+        plot,
+        playerDetails,
+        playerList,
+        category: selectedCategory,
+      });
+    } else if (route && route.name === "ScriptConfig") {
+      navigation.navigate("ScriptReading", {
+        plot,
+        playerDetails,
+        playerList,
+        category: selectedCategory,
+      });
+    } else {
+      console.warn("Ruta no reconocida:", route?.name);
+    }
   };
+
+  // Componente para el selector de categoría usando Modal
+  const renderCategoryModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContainer}>
+          <ScrollView>
+            {categorias.map((cat, index) => (
+              <TouchableOpacity
+                key={index}
+                style={styles.modalItem}
+                onPress={() => {
+                  setSelectedCategory(cat);
+                  setModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalItemText}>{cat}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.modalCloseText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -178,17 +228,37 @@ const StoryConfig = ({ navigation, route }) => {
                 <View style={{ padding: 20, flex: 1 }}>
                   <FlatList
                     ListHeaderComponent={
-                      <TextInput
-                        style={[
-                          styles.input,
-                          { marginBottom: 20, minHeight: 100, minWidth: "100%" },
-                        ]}
-                        placeholder="Puedes sugerir alguna trama. Si dejas este campo vacío, se asignará una trama random."
-                        placeholderTextColor="#737373"
-                        value={plot}
-                        onChangeText={setPlot}
-                        multiline
-                      />
+                      <>
+                        <View style={styles.categorySelector}>
+                          <Text style={styles.label}>
+                            Categoría seleccionada:
+                          </Text>
+                          <TouchableOpacity
+                            style={styles.categoryButton}
+                            onPress={() => setModalVisible(true)}
+                          >
+                            <Text style={styles.categoryButtonText}>
+                              {selectedCategory}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                        <TextInput
+                          style={[
+                            styles.input,
+                            {
+                              marginBottom: 20,
+                              minHeight: 100,
+                              minWidth: "100%",
+                            },
+                          ]}
+                          placeholder="Puedes sugerir alguna trama. Si dejas este campo vacío, se asignará una trama random."
+                          placeholderTextColor="#737373"
+                          value={plot}
+                          onChangeText={setPlot}
+                          multiline
+                        />
+                        {renderCategoryModal()}
+                      </>
                     }
                     data={playerList}
                     renderItem={({ item, index }) => (
@@ -290,6 +360,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 10,
   },
+  categorySelector: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+    color: "#FFF",
+  },
+  categoryButton: {
+    backgroundColor: "#FFF",
+    padding: 10,
+    borderRadius: 10,
+  },
+  categoryButtonText: {
+    color: "#000",
+    fontSize: 16,
+  },
   playerDetail: {
     marginBottom: 15,
   },
@@ -319,6 +407,39 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: "#FFF",
+    width: "80%",
+    maxHeight: "70%",
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: "#000",
+  },
+  modalCloseButton: {
+    marginTop: 10,
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#0F3F81",
+    borderRadius: 10,
+  },
+  modalCloseText: {
+    color: "#FFF",
+    fontSize: 16,
   },
 });
 

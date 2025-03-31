@@ -1,5 +1,5 @@
 import { aws_dynamodb as dynamodb } from "aws-cdk-lib";
-import { Construct } from 'constructs';
+import { Construct } from "constructs";
 
 export class AppDatabase extends Construct {
   public readonly employeeTable: dynamodb.ITable;
@@ -7,115 +7,126 @@ export class AppDatabase extends Construct {
   public readonly cardsTable: dynamodb.ITable;
   public readonly storiesTable: dynamodb.ITable;
   public readonly storyNodesTable: dynamodb.ITable;
-  
+  public readonly scriptTable: dynamodb.ITable;
+
   constructor(scope: Construct, id: string) {
     super(scope, id);
 
     // Employees table ------------------
-    const employeeTable = new dynamodb.Table(this, 'EmployeeTable', {
+    const employeeTable = new dynamodb.Table(this, "EmployeeTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: 'CognitoId',
+        name: "CognitoId",
         type: dynamodb.AttributeType.STRING,
       },
     });
 
     employeeTable.addGlobalSecondaryIndex({
-      indexName: 'GSI1',
+      indexName: "GSI1",
       partitionKey: {
-        name: 'status',
+        name: "status",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
     });
-    
+
     this.employeeTable = employeeTable;
 
     // Categories table ------------------
-    const categoriesTable = new dynamodb.Table(this, 'CategoryTable', {
+    const categoriesTable = new dynamodb.Table(this, "CategoryTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
     });
-    
+
     this.categoriesTable = categoriesTable;
 
     // Cards table ------------------
-    const cardsTable = new dynamodb.Table(this, 'CardTable', {
+    const cardsTable = new dynamodb.Table(this, "CardTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: 'categoryId',
+        name: "categoryId",
         type: dynamodb.AttributeType.STRING,
       },
     });
 
     cardsTable.addGlobalSecondaryIndex({
-      indexName: 'GSI1',
+      indexName: "GSI1",
       partitionKey: {
-        name: 'categoryId',
+        name: "categoryId",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
     });
-    
+
     this.cardsTable = cardsTable;
 
     // Stories table ------------------
-    const storiesTable = new dynamodb.Table(this, 'StoriesTable', {
+    const storiesTable = new dynamodb.Table(this, "StoriesTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
     });
-    
+
     this.storiesTable = storiesTable;
 
     // Story Nodes table ------------------
-    const storyNodesTable = new dynamodb.Table(this, 'StoryNodesTable', {
+    const storyNodesTable = new dynamodb.Table(this, "StoryNodesTable", {
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       partitionKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: 'storyId',
+        name: "storyId",
         type: dynamodb.AttributeType.STRING,
       },
     });
 
-    // Índice secundario si necesitas consultar nodos por contenido o algún otro atributo
     storyNodesTable.addGlobalSecondaryIndex({
-      indexName: 'GSI1',
+      indexName: "GSI1",
       partitionKey: {
-        name: 'storyId',
+        name: "storyId",
         type: dynamodb.AttributeType.STRING,
       },
       sortKey: {
-        name: 'PK',
+        name: "PK",
         type: dynamodb.AttributeType.STRING,
       },
       projectionType: dynamodb.ProjectionType.ALL,
     });
-    
+
     this.storyNodesTable = storyNodesTable;
+
+    // Script table ------------------
+    const scriptTable = new dynamodb.Table(this, "ScriptTable", {
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      partitionKey: {
+        name: "PK",
+        type: dynamodb.AttributeType.STRING,
+      },
+    });
+
+    this.scriptTable = scriptTable;
   }
 }
