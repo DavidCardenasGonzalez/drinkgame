@@ -29,17 +29,17 @@ async function modificarRegistros() {
       // console.log(array);
       const registroEjemplo = {
         PK: KSUID.randomSync().string,
-        categoryId: "2VrJbLSDL1mJ6AESPoxxoGHZysi",
+        categoryId: "2v6Y5OXroYvvWQAHS6e005rCh3V",
         date: new Date().toISOString(),
+        info: "encuestaDeDedos",
         // duration: 2,
         status: "active",
         text: registro,
         text2: "",
         // text: array[0],
         // passcode: array[1],
-        type: "timeout",
-        timeout: 60,
-        lote: "46",
+        type: "text",
+        lote: "47",
         // info: "passcode",
       };
       

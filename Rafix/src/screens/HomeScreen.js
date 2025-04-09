@@ -111,9 +111,6 @@ function HomeScreen({ route, navigation }) {
             Política de Privacidad
           </Text>
         </Text>
-        <TouchableOpacity onPress={openInstagram}>
-          <Text style={styles.contactUs}>Contáctanos</Text>
-        </TouchableOpacity>
       </View>
     </ImageBackground>
   );
@@ -137,6 +134,7 @@ const styles = StyleSheet.create({
     height: 65,
   },
   person: {
+    marginTop: -30,
     width: 350,
     height: 350,
     marginBottom: -20,
