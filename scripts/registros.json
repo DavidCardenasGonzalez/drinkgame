@@ -465,7 +465,7 @@
     "lote": "19",
     "categoryId": "2fidDXrvXvvfZA0AYPp3v6Ljh9W",
     "status": "active",
-    "text": "{{player}}, ¿robarías $10,000 dolares de una persona millonaria sabiendo que no se daría cuenta?",
+    "text": "{{player}}, ¿robarías $10,000 dólares de una persona millonaria sabiendo que no se daría cuenta?",
     "PK": "2igy88zB1WmGciotpFaZMxsgiB8",
     "type": "text"
   },
@@ -1425,7 +1425,7 @@
     "lote": "20",
     "categoryId": "2fidDXrvXvvfZA0AYPp3v6Ljh9W",
     "status": "active",
-    "text": "{{player}}, encuentras una cartera perdida que contiene $1000 dolares. Hay muchas cosas en la cartera que sugieren que le pertenece a un hombre rico. ¿La devolverías si tuvieras disponible su dirección?",
+    "text": "{{player}}, encuentras una cartera perdida que contiene $1000 dólares. Hay muchas cosas en la cartera que sugieren que le pertenece a un hombre rico. ¿La devolverías si tuvieras disponible su dirección?",
     "PK": "2ih0fNTe304Y36t8y7ioYs5BLz0",
     "type": "text"
   },
@@ -4367,7 +4367,7 @@
     "status": "active",
     "text": "{{player}}, ¿cuál es la perdición de tu existencia?",
     "PK": "2ioPZkMniHyvOmVIQka68yVHAi2",
-    "type": "text"
+    "type": "delete"
   },
   {
     "date": "2024-07-05T04:33:34.547Z",
@@ -4625,7 +4625,7 @@
     "lote": "28",
     "categoryId": "2fidDXrvXvvfZA0AYPp3v6Ljh9W",
     "status": "active",
-    "text": "{{player}}, encuentras un cadáver en un lugar aislado. Ves unos cuantos billetes de $100 cerca del cuerpo que podrían ser usados como evidencia. ¿Los tomarías?",
+    "text": "{{player}}, encuentras un cadáver en un lugar aislado. Ves unos cuantos billetes de $100 dólares cerca del cuerpo que podrían ser usados como evidencia. ¿Los tomarías?",
     "PK": "2jENcSfQML7BVz8j3qwWuRtWR5j",
     "type": "text"
   },
@@ -4637,7 +4637,7 @@
     "status": "active",
     "text": "{{player}}, te han dado el poder de curar instantáneamente todas las enfermedades de transmisión sexual, pero no puedes tener sexo por el resto de tu vida. ¿Lo aceptas?",
     "PK": "2jENcTk3XgHEU6M1yT80R6qMeKD",
-    "type": "text"
+    "type": "delete"
   },
   {
     "date": "2024-07-14T09:12:35.590Z",
@@ -4667,7 +4667,7 @@
     "status": "active",
     "text": "{{player}}, ¿qué es peor: perder tu teléfono celular o perder a tu mascota después de una semana de tenerla?",
     "PK": "2jENcWVthxOoDrRMLQcQkxn2kEe",
-    "type": "text"
+    "type": "delete"
   },
   {
     "date": "2024-07-14T09:12:35.129Z",
@@ -4677,7 +4677,7 @@
     "status": "active",
     "text": "{{player}}, estás en el baño de un bar sucio y lleno de gente después de perder una apuesta innegociable con tu mejor amigo. ¿Prefieres lamer el asiento del inodoro o salir del baño desnudo?",
     "PK": "2jENcXL5NTJyw7NA6cmXqEtlEnb",
-    "type": "text"
+    "type": "delete"
   },
   {
     "date": "2024-07-14T09:12:36.048Z",
