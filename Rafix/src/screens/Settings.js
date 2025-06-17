@@ -67,8 +67,11 @@ function Settings({ route, navigation }) {
             offerings.all["All acess"].availablePackages
           );
           if (proEntitlement) {
-            const proPackage = offerings.all["All acess"].availablePackages.find(
-              (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
+            const proPackage = offerings.all[
+              "All acess"
+            ].availablePackages.find(
+              (pkg) =>
+                pkg.product.identifier === proEntitlement.productIdentifier
             );
             if (proPackage) {
               setProPackageInfo(proPackage);
@@ -104,7 +107,8 @@ function Settings({ route, navigation }) {
           setProInfo(proEntitlement);
           if (proEntitlement) {
             const proPackage = availablePackages.find(
-              (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
+              (pkg) =>
+                pkg.product.identifier === proEntitlement.productIdentifier
             );
             if (proPackage) {
               setProPackageInfo(proPackage);
@@ -119,7 +123,8 @@ function Settings({ route, navigation }) {
           setProInfo(proEntitlement);
           if (proEntitlement) {
             const proPackage = availablePackages.find(
-              (pkg) => pkg.product.identifier === proEntitlement.productIdentifier
+              (pkg) =>
+                pkg.product.identifier === proEntitlement.productIdentifier
             );
             if (proPackage) {
               setProPackageInfo(proPackage);
@@ -150,10 +155,16 @@ function Settings({ route, navigation }) {
           setProPackageInfo(proPackage);
         }
       }
-      Alert.alert("Restaurar Compras", "Las compras se han restaurado exitosamente.");
+      Alert.alert(
+        "Restaurar Compras",
+        "Las compras se han restaurado exitosamente."
+      );
     } catch (error) {
       console.log("Error restaurando compras:", error);
-      Alert.alert("Error", "No se pudieron restaurar las compras, inténtalo de nuevo.");
+      Alert.alert(
+        "Error",
+        "No se pudieron restaurar las compras, inténtalo de nuevo."
+      );
     }
   };
 
@@ -264,6 +275,11 @@ function Settings({ route, navigation }) {
           onPress={openInstagram}
           iconName="chatbubble-ellipses-outline"
           text="Contáctanos"
+        />
+        <ListItem
+          onPress={() => navigation.navigate("Codes")}
+          iconName="pricetags-outline"
+          text="Tengo un código"
         />
         <ListItem
           onPress={restorePurchases}

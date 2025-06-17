@@ -87,8 +87,8 @@ function replacePlaceholderWithPlayerName(text, members, placeholder) {
   const availableMembers = members.filter(
     (member) => !text.includes(member.name)
   );
-  const randomName =
-    availableMembers[Math.floor(Math.random() * availableMembers.length)].name;
+  const randomPlayer = availableMembers[Math.floor(Math.random() * availableMembers.length)];
+  const randomName = randomPlayer ? randomPlayer.name : "";
 
   while (text.includes(placeholder)) {
     text = text.replace(placeholder, randomName);

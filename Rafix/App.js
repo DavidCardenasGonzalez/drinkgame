@@ -13,6 +13,7 @@ import Script from "./src/screens/Script";
 import Game from "./src/screens/Game";
 import Info from "./src/screens/Info";
 import Settings from "./src/screens/Settings";
+import Codes from "./src/screens/Codes";
 import { useEffect } from "react";
 
 const Stack = createNativeStackNavigator();
@@ -104,6 +105,11 @@ function App() {
         <Stack.Screen
           name="Settings"
           component={Settings}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Codes"
+          component={Codes}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

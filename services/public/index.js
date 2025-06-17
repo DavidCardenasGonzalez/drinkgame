@@ -1,4 +1,9 @@
-import { createRouter, RouterType, Matcher } from "lambda-micro";
+import {
+  createRouter,
+  RouterType,
+  Matcher,
+  validatePathVariables,
+} from "lambda-micro";
 import { AWSClients, generateGame } from "../common";
 import { Configuration, OpenAIApi } from "openai";
 
@@ -8,6 +13,7 @@ const polly = AWSClients.polly();
 
 const categoryTableName = process.env.CATEGORIES_DB_TABLE;
 const cardsTableName = process.env.CARDS_DB_TABLE;
+const scriptTableName = process.env.SCRIPTS_DB_TABLE;
 
 const client = new Configuration({
   apiKey: process.env['OPENAI_API_KEY'],
@@ -15,7 +21,7 @@ const client = new Configuration({
 const openai = new OpenAIApi(client);
 
 const getSignedURL = async (picture) => {
-  const urlExpirySeconds = 60 * 60 * 24; // One day
+  const urlExpirySeconds = 60 * 60 * 48; // Un día
   const params = {
     Bucket: process.env.ASSET_BUCKET,
     Key: picture,
@@ -71,6 +77,55 @@ const getAllCategories = async (request, response) => {
   } catch (error) {
     console.error("Error retrieving categories:", error);
     return response.output({ error: "Error retrieving categories" }, 500);
+  }
+};
+
+const validateCode = async (request, response) => {
+  try {
+    const { code } = JSON.parse(request.event.body);
+    const ADMIN_CODES = [
+      "ADMIN123",
+      "OTROADMINCODE",
+      // Añade aquí los códigos de admin que desees
+    ];
+    const PROMO_CODES = [
+      "PROMO50",
+      "PROMO2025",
+      // Añade aquí los códigos de promo
+    ];
+
+    let result;
+    if (ADMIN_CODES.includes(code.toUpperCase())) {
+      result = "admin";
+    } else if (PROMO_CODES.includes(code.toUpperCase())) {
+      result = "promo";
+    } else {
+      result = "error";
+    }
+    return response.output({ result }, 200);
+  } catch (error) {
+    console.error("Error validating code:", error);
+    return response.output({ error: "Error validating code" }, 500);
+  }
+};
+
+const checkVersion = async (request, response) => {
+  try {
+    const { version } = JSON.parse(request.event.body);
+    const updateAvailable = 2;
+    const requestUpdate = 1;
+    let result;
+    if (version < requestUpdate) {
+      result = "requestUpdate";
+    } else if (version < updateAvailable) {
+      result = "updateAvailable";
+    } else {
+      result = "noUpdate";
+    }
+    return response.output({ result }, 200);
+  } catch (error) {
+    console.error("Error checking version:", error);
+    return response.output({ error: "Error checking version" }, 500);
   }
 };
 
@@ -216,6 +271,116 @@ const generateStoryGame = async (request, response) => {
   }
 };
 
+const generateScript = async (request, response) => {
+  try {
+    const { players, plot, category } = JSON.parse(request.event.body);
+    const personajes = players
+      .map((p, index) => {
+        const notas =
+          p.notes && p.notes.trim() ? p.notes : "crea un personaje original";
+        return `Personaje ${index + 1}: ${p.name}. Notas: ${notas}.`;
+      })
+      .join("\n");
+
+    const trama =
+      plot && plot.trim() ? plot : "Crea una trama para un guion de teatro.";
+
+    const prompt = `
+    Crea un guion de teatro corto en español.
+    Que no requiera utilería ni escenografía compleja.
+    Utiliza los siguientes personajes:
+    ${personajes}
+    
+    Trama: ${trama}
+
+    Categoría: ${category || "Aleatorio"}
+    
+    El guion debe incluir diálogos entre personajes, descripciones de escenas y acciones.
+    `;
+
+    console.log("Prompt para guion:", prompt);
+
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            "Eres un guionista creativo que escribe guiones de teatro en español.",
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: 0.8,
+      max_tokens: 1200,
+    });
+
+    const script = completion.data.choices[0].message.content;
+    console.log("Guion generado:", script);
+    const generateRandomCode = () => {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let code = "";
+      for (let i = 0; i < 5; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+
+    const id = generateRandomCode();
+    const createdAt = new Date().toISOString();
+    const params = {
+      TableName: scriptTableName,
+      Item: {
+        PK: id,
+        script: script,
+        createdAt: createdAt,
+      },
+    };
+
+    await dynamoDB.put(params).promise();
+
+    return response.output(
+      {
+        PK: id,
+        script: script,
+        createdAt: createdAt,
+      },
+      200
+    );
+  } catch (error) {
+    console.error("Error en generateScript:", error);
+    return response.output({ error: error.message }, 500);
+  }
+};
+
+const getScript = async (request, response) => {
+  try {
+    const id = request.pathVariables.id;
+    console.log("Buscando guion con ID:", id);
+    if (!id) {
+      return response.output({ error: "Falta el código de guion" }, 400);
+    }
+
+    const params = {
+      TableName: scriptTableName,
+      Key: { PK: id ? id.toUpperCase() : "" },
+    };
+
+    const result = await dynamoDB.get(params).promise();
+
+    if (!result.Item) {
+      return response.output({ error: "Guion no encontrado" }, 405);
+    }
+
+    return response.output(result.Item, 200);
+  } catch (error) {
+    console.error("Error en getScript:", error);
+    return response.output({ error: error.message }, 500);
+  }
+};
+
 const router = createRouter(RouterType.HTTP_API_V2);
 router.add(Matcher.HttpApiV2("GET", "/public/categories/"), getAllCategories);
 router.add(
@@ -223,11 +388,30 @@ router.add(
   generateCategoryGame
 );
 
-// Aquí agregamos la nueva ruta para generar la historia
 router.add(
   Matcher.HttpApiV2("POST", "/public/generateStoryGame"),
   generateStoryGame
 );
+
+router.add(Matcher.HttpApiV2("POST", "/public/generateScript"), generateScript);
+
+router.add(
+  Matcher.HttpApiV2("GET", "/public/script(/:id)"),
+  validatePathVariables({
+    type: "object",
+    properties: {
+      id: {
+        type: "string",
+      },
+    },
+    additionalProperties: false,
+  }),
+  getScript
+);
+
+router.add(Matcher.HttpApiV2("POST", "/public/validateCode"), validateCode);
+
+router.add(Matcher.HttpApiV2("POST", "/public/version"), checkVersion);
 
 // Lambda Handler
 exports.handler = async (event, context) => {

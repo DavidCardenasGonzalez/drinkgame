@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   useWindowDimensions,
+  Alert,
 } from "react-native";
 import { generateGame } from "../services";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -108,6 +109,33 @@ const Game = ({ route, navigation }) => {
     };
   }, [route.params]);
 
+  const handleBackPress = useCallback(() => {
+    Alert.alert(
+      "Confirmación",
+      "¿Seguro que quieres abandonar el juego?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+          // No hace nada, se cierra la alerta
+        },
+        {
+          text: "Sí, salir",
+          style: "destructive",
+          onPress: () => {
+            // Navegar solo si confirma
+            navigation.navigate("Categories", { playerList });
+            // O si prefieres ir a la pantalla anterior en vez de Categories:
+            // navigation.goBack();
+          },
+        },
+      ],
+      {
+        cancelable: true, // Permite cerrar alert tocando fuera en Android
+      }
+    );
+  }, [navigation, playerList]);
+
   const prefetchBackgroundImages = (dictionary) => {
     Object.values(dictionary).forEach((url) => {
       Image.prefetch(url);
@@ -134,6 +162,16 @@ const Game = ({ route, navigation }) => {
       );
     } else {
       setEndGame(true);
+    }
+  };
+
+  const handlePreviousCard = async () => {
+    if (currentCard > 0) {
+      setCurrentCard(currentCard - 1);
+      await AsyncStorage.setItem(
+        "currentCard",
+        JSON.stringify(currentCard - 1)
+      );
     }
   };
 
@@ -171,13 +209,7 @@ const Game = ({ route, navigation }) => {
         style={styles.container}
       >
         <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate("Categories", {
-                playerList,
-              })
-            }
-          >
+          <TouchableOpacity onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color="white" />
           </TouchableOpacity>
           {cards[currentCard]?.info ? (
@@ -317,6 +349,20 @@ const Game = ({ route, navigation }) => {
               )}
             </View>
           )}
+          <TouchableOpacity
+            style={{
+              position: "absolute",
+              bottom: 20,
+              left: 20,
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              padding: 10,
+              borderRadius: 5,
+            }}
+            onPress={handlePreviousCard}
+            disabled={currentCard === 0}
+          >
+            <Ionicons name="play-skip-back" size={24} color="white" />
+          </TouchableOpacity>
         </TouchableOpacity>
 
         <Modal

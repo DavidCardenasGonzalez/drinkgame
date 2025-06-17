@@ -27,7 +27,7 @@ import {
         IndexName: "GSI1", // Asegúrate de que el índice esté correctamente configurado
         KeyConditionExpression: "categoryId = :category_id",
         ExpressionAttributeValues: {
-          ":category_id": { S: '2fidDXrvXvvfZA0AYPp3v6Ljh9W' },
+          ":category_id": { S: '2fkNz9INsveselCm3DtzPAyDHCL' },
         },
       });
       const queryResult = await dynamodbClient.send(queryCommand);

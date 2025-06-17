@@ -9,9 +9,10 @@ import {
   Linking,
   Alert,
 } from "react-native";
+import { Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
-import { getAllCategories } from "../../src/services";
+import { getAllCategories, versionCheck } from "../../src/services";
 
 function HomeScreen({ route, navigation }) {
   const [showLastGame, setShowLastGame] = useState(false);
@@ -37,10 +38,77 @@ function HomeScreen({ route, navigation }) {
           Alert.alert("Error", "No se pudo abrir Instagram.");
         }
       })
-      .catch((err) =>
-        console.error("Error al intentar abrir Instagram:", err)
-      );
+      .catch((err) => console.error("Error al intentar abrir Instagram:", err));
   };
+
+  useEffect(() => {
+    const checkVersion = async () => {
+      try {
+        const result = await versionCheck();
+        console.log("Resultado de versionCheck:", result);
+        // Define aquí las URLs de tu app en tiendas:
+        const playStorePackage = "com.cardi7.Rafix";
+        const playStoreUrl = `market://details?id=${playStorePackage}`;
+        const playStoreWebUrl = `https://play.google.com/store/apps/details?id=${playStorePackage}`;
+        const appStoreUrl = "https://apps.apple.com/us/app/rafix/id6615065809";
+
+        // Función para abrir la URL adecuada según plataforma y fallback
+        const openStore = () => {
+          if (Platform.OS === "android") {
+            // Intentar abrir app de Play Store; si falla, abrir web
+            Linking.openURL(playStoreUrl).catch(() => {
+              Linking.openURL(playStoreWebUrl).catch((err) =>
+                console.error("Error abriendo Play Store web:", err)
+              );
+            });
+          } else if (Platform.OS === "ios") {
+            Linking.openURL(appStoreUrl).catch((err) =>
+              console.error("Error abriendo App Store:", err)
+            );
+          }
+        };
+
+        if (result === "requestUpdate") {
+          // Actualización forzada: no permitimos "Más tarde"
+          Alert.alert(
+            "Actualización obligatoria",
+            "Hay una nueva versión que debes instalar para seguir usando la aplicación.",
+            [
+              {
+                text: "Actualizar ahora",
+                onPress: openStore,
+              },
+            ],
+            { cancelable: false }
+          );
+        } else if (result === "updateAvailable") {
+          // Actualización opcional: permitimos posponer
+          Alert.alert(
+            "Actualización disponible",
+            "Hay una nueva versión de la aplicación. ¿Quieres actualizar ahora?",
+            [
+              {
+                text: "Actualizar",
+                onPress: openStore,
+              },
+              {
+                text: "Más tarde",
+                style: "cancel",
+                onPress: () => {
+                  console.log("Usuario pospuso la actualización");
+                },
+              },
+            ],
+            { cancelable: true }
+          );
+        }
+      } catch (error) {
+        console.error("Error al verificar la versión:", error);
+      }
+    };
+
+    checkVersion();
+  }, []);
 
   return (
     <ImageBackground
@@ -84,18 +152,14 @@ function HomeScreen({ route, navigation }) {
             style={styles.button}
             onPress={() => navigation.navigate("Game")}
           >
-            <Text style={styles.buttonText}>
-              Continuar juego anterior
-            </Text>
+            <Text style={styles.buttonText}>Continuar juego anterior</Text>
           </TouchableOpacity>
         )}
         <Text style={styles.footerText}>
           Al hacer clic en "Nuevo juego" o "Continuar juego anterior", aceptas
           <Text
             style={styles.link}
-            onPress={() =>
-              navigation.navigate("Info", { type: "terms" })
-            }
+            onPress={() => navigation.navigate("Info", { type: "terms" })}
           >
             {" "}
             Términos de Servicio
@@ -103,9 +167,7 @@ function HomeScreen({ route, navigation }) {
           y
           <Text
             style={styles.link}
-            onPress={() =>
-              navigation.navigate("Info", { type: "privacy" })
-            }
+            onPress={() => navigation.navigate("Info", { type: "privacy" })}
           >
             {" "}
             Política de Privacidad
